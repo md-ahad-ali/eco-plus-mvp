@@ -37,6 +37,7 @@ Activate it in PowerShell:
 ```
 
 When activation succeeds, your terminal prompt should begin with `(.venv)`.
+If you want to deactivate .venv write `deactivate`
 
 ### If `.venv` does not exist
 
