@@ -1,11 +1,115 @@
-﻿.venv/
+﻿
+# ==============================
+# Operating System
+# ==============================
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# ==============================
+# IDEs and Editors
+# ==============================
+
+# VS Code
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# ==============================
+# Python
+# ==============================
 __pycache__/
 *.py[cod]
+*$py.class
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+.eggs/
+wheels/
+
+# Testing and coverage
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# Environment variables and secrets
 .env
 .env.*
 !.env.example
-.pytest_cache/
+
+# ==============================
+# Node.js / Next.js
+# ==============================
+
+# Dependencies
 node_modules/
-.env
-dist/
+
+# Next.js build output
+.next/
+out/
+
+# Production build
 build/
+dist/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+*.log
+
+# Package manager / tooling
+.turbo/
+.vercel/
+.eslintcache
+
+# TypeScript
+*.tsbuildinfo
+next-env.d.ts
+
+# Environment files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==============================
+# Docker / Database
+# ==============================
+
+# Local database data
+mysql-data/
+data/
+
+# ==============================
+# Temporary files
+# ==============================
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
