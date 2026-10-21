@@ -43,3 +43,12 @@ def summary(db: Session, building_id=None, start=None, end=None) -> dict:
     kwh, temp = db.execute(_range(stmt, start, end)).one()
     return {**_totals(kwh), "avg_indoor_temp": round(float(temp or 0), 1)}
 
+def by_building(db: Session, start=None, end=None) -> list[dict]:
+    stmt = (
+        select(Building.id, Building.name, func.sum(EnergyLog.energy_consumed_kwh))
+        .join(Room, Room.building_id == Building.id)
+        .join(EnergyLog, EnergyLog.room_id == Room.id)
+        .group_by(Building.id, Building.name)
+    )
+    rows = db.execute(_range(stmt, start, end)).all()
+    return [{"building_id": i, "name": n, **_totals(k)} for i, n, k in rows]
