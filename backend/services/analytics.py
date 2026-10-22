@@ -52,3 +52,13 @@ def by_building(db: Session, start=None, end=None) -> list[dict]:
     )
     rows = db.execute(_range(stmt, start, end)).all()
     return [{"building_id": i, "name": n, **_totals(k)} for i, n, k in rows]
+
+def by_room(db: Session, building_id: int, start=None, end=None) -> list[dict]:
+    stmt = (
+        select(Room.id, Room.room_name, func.sum(EnergyLog.energy_consumed_kwh))
+        .join(EnergyLog, EnergyLog.room_id == Room.id)
+        .where(Room.building_id == building_id)
+        .group_by(Room.id, Room.room_name)
+    )
+    rows = db.execute(_range(stmt, start, end)).all()
+    return [{"room_id": i, "room_name": n, **_totals(k)} for i, n, k in rows]
