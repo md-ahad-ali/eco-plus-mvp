@@ -62,3 +62,11 @@ def by_room(db: Session, building_id: int, start=None, end=None) -> list[dict]:
     )
     rows = db.execute(_range(stmt, start, end)).all()
     return [{"room_id": i, "room_name": n, **_totals(k)} for i, n, k in rows]
+
+def timeseries(db: Session, building_id=None, granularity="day", start=None, end=None) -> list[dict]:
+    bucket = func.date_format(EnergyLog.timestamp, BUCKETS[granularity])
+    stmt = select(bucket, func.sum(EnergyLog.energy_consumed_kwh)).join(Room, Room.id == EnergyLog.room_id)
+    if building_id:
+        stmt = stmt.where(Room.building_id == building_id)
+    stmt = _range(stmt, start, end).group_by(bucket).order_by(bucket)
+    return [{"period": p, **_totals(k)} for p, k in db.execute(stmt).all()]
