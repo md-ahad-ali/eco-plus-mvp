@@ -70,3 +70,12 @@ def timeseries(db: Session, building_id=None, granularity="day", start=None, end
         stmt = stmt.where(Room.building_id == building_id)
     stmt = _range(stmt, start, end).group_by(bucket).order_by(bucket)
     return [{"period": p, **_totals(k)} for p, k in db.execute(stmt).all()]
+
+def span_days(db: Session, building_id: int, start=None, end=None) -> float:
+    stmt = select(func.min(EnergyLog.timestamp), func.max(EnergyLog.timestamp)).join(
+        Room, Room.id == EnergyLog.room_id
+    ).where(Room.building_id == building_id)
+    first, last = db.execute(_range(stmt, start, end)).one()
+    if not first:
+        return 0.0
+    return max(1.0, round((last - first).total_seconds() / 86400 + 1 / 24, 2))
