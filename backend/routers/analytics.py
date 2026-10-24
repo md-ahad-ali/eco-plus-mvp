@@ -1,11 +1,12 @@
 from datetime import datetime
 
 from fastapi import APIRouter, Depends, Query, HTTPException
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Building
-from services import analytics, sustainability
+from models import Building, EnergyLog, Room
+from services import analytics, sustainability, anomaly
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
@@ -43,3 +44,13 @@ def get_sustainability(building_id: int, start: datetime | None = None,
     score = sustainability.sustainability_score(data["total_kwh"], building.area_sqm, days)
     return {"building_id": building_id, "name": building.name, **data,
             "days": days, "score": score, "grade": sustainability.grade(score)}
+@router.get("/anomalies")
+def get_anomalies(building_id: int, z: float = 3.0, start: datetime | None = None,
+                  end: datetime | None = None, db: Session = Depends(get_db)):
+    stmt = (select(EnergyLog.room_id, EnergyLog.timestamp, EnergyLog.energy_consumed_kwh)
+            .join(Room, Room.id == EnergyLog.room_id).where(Room.building_id == building_id))
+    if start:
+        stmt = stmt.where(EnergyLog.timestamp >= start)
+    if end:
+        stmt = stmt.where(EnergyLog.timestamp < end)
+    return anomaly.detect_anomalies(db.execute(stmt).all(), z)
