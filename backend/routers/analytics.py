@@ -1,12 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from fastapi import APIRouter, Depends, Query, HTTPException
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Building, EnergyLog, Room
-from services import analytics, sustainability, anomaly
+from services import analytics, sustainability, anomaly, forecast
 
 router = APIRouter(prefix="/api/analytics", tags=["analytics"])
 
@@ -54,3 +54,15 @@ def get_anomalies(building_id: int, z: float = 3.0, start: datetime | None = Non
     if end:
         stmt = stmt.where(EnergyLog.timestamp < end)
     return anomaly.detect_anomalies(db.execute(stmt).all(), z)
+
+@router.get("/forecast/{building_id}")
+def get_forecast(building_id: int, history_days: int = 14, db: Session = Depends(get_db)):
+    last = db.execute(select(func.max(EnergyLog.timestamp)).join(Room, Room.id == EnergyLog.room_id)
+                      .where(Room.building_id == building_id)).scalar()
+    if not last:
+        raise HTTPException(404, "No data for this building")
+    stmt = (select(EnergyLog.timestamp, func.sum(EnergyLog.energy_consumed_kwh))
+            .join(Room, Room.id == EnergyLog.room_id)
+            .where(Room.building_id == building_id, EnergyLog.timestamp > last - timedelta(days=history_days))
+            .group_by(EnergyLog.timestamp))
+    return forecast.forecast_next_24h(db.execute(stmt).all())
