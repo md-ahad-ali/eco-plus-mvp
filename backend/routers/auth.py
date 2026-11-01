@@ -4,8 +4,8 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User
-from schemas import UserCreate, UserResponse
-from services.security import hash_password
+from schemas import UserCreate, UserLogin, UserResponse
+from services.security import hash_password, verify_password
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -34,4 +34,21 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return new_user
+
+
+@router.post("/login", response_model=UserResponse)
+def login(credentials: UserLogin, db: Session = Depends(get_db)):
+    # Check if user exists
+    user = db.execute(
+        select(User).where(User.username == credentials.username)
+    ).scalar_one_or_none()
+
+    # Verify user exists and password is correct
+    if not user or not verify_password(credentials.password, user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid username or password",
+        )
+
+    return user
 

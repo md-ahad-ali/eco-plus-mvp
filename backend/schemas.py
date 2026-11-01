@@ -9,6 +9,11 @@ class UserCreate(BaseModel):
     role: UserRole = Field(default=UserRole.OCCUPANT, description="Role of the user")
 
 
+class UserLogin(BaseModel):
+    username: str = Field(..., min_length=1, description="Username")
+    password: str = Field(..., min_length=1, description="Password")
+
+
 class UserResponse(BaseModel):
     id: int
     username: str
