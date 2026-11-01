@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import analytics
+from routers import analytics, auth
 
 app = FastAPI(
     title=settings.app_name,
@@ -12,6 +12,7 @@ app = FastAPI(
 
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 app.include_router(analytics.router)
+app.include_router(auth.router)
 
 
 @app.get("/")
