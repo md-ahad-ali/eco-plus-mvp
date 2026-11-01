@@ -1,9 +1,16 @@
+import enum
 from datetime import datetime
 
-from sqlalchemy import DateTime, Float, ForeignKey, String
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
+
+
+class UserRole(str, enum.Enum):
+    ADMIN = "admin"
+    BUILDING_MANAGER = "building_manager"
+    OCCUPANT = "occupant"
 
 
 class User(Base):
@@ -11,6 +18,11 @@ class User(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     username: Mapped[str] = mapped_column(String(100), unique=True)
     password_hash: Mapped[str] = mapped_column(String(255))
+    role: Mapped[UserRole] = mapped_column(
+        Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]),
+        default=UserRole.OCCUPANT,
+        nullable=False,
+    )
 
 
 class Building(Base):
@@ -25,6 +37,9 @@ class Room(Base):
     __tablename__ = "rooms"
     id: Mapped[int] = mapped_column(primary_key=True)
     building_id: Mapped[int] = mapped_column(ForeignKey("buildings.id"))
+    occupant_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id"), nullable=True
+    )
     room_name: Mapped[str] = mapped_column(String(100))
 
 

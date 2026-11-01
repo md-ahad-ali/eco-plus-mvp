@@ -4,7 +4,8 @@ USE ecopulse;
 CREATE TABLE users (
     id INT AUTO_INCREMENT PRIMARY KEY,
     username VARCHAR(100) UNIQUE NOT NULL,
-    password_hash VARCHAR(255) NOT NULL
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('admin', 'building_manager', 'occupant') NOT NULL DEFAULT 'occupant'
 ) ENGINE=InnoDB;
 
 CREATE TABLE buildings (
@@ -18,8 +19,10 @@ CREATE TABLE buildings (
 CREATE TABLE rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     building_id INT NOT NULL,
+    occupant_id INT NULL,
     room_name VARCHAR(100),
-    FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+    FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE,
+    FOREIGN KEY (occupant_id) REFERENCES users(id) ON DELETE SET NULL
 ) ENGINE=InnoDB;
 
 CREATE TABLE energy_logs (
