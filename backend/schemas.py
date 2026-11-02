@@ -21,3 +21,13 @@ class UserResponse(BaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserResponse
+
+
+class TokenPayload(BaseModel):
+    sub: str | None = None
+    role: UserRole | None = None

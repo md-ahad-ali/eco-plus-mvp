@@ -9,6 +9,11 @@ class Settings(BaseSettings):
     port: int = 8000
     debug: bool = True
 
+    # JWT Authentication
+    secret_key: str = "ecopulse-secret-key-change-in-production-only"
+    algorithm: str = "HS256"
+    access_token_expire_minutes: int = 60 * 24  # 1 day
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
@@ -21,5 +26,8 @@ DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:password@localhos
 TARIFF = float(os.getenv("TARIFF_EUR_PER_KWH", "0.30"))
 CO2_FACTOR = float(os.getenv("CO2_KG_PER_KWH", "0.40"))
 BENCHMARK = float(os.getenv("BENCHMARK_KWH_PER_SQM_DAY", "0.06"))
+SECRET_KEY = os.getenv("SECRET_KEY", "ecopulse-secret-key-change-in-production-only")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
 settings = Settings()
