@@ -82,6 +82,27 @@ class BuildingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class RoomCreate(BaseModel):
+    building_id: int = Field(..., description="Building the room belongs to")
+    room_name: str = Field(..., min_length=1, max_length=100)
+    occupant_id: int | None = Field(default=None, description="User living in the room")
+
+
+class RoomUpdate(BaseModel):
+    building_id: int | None = None
+    room_name: str | None = Field(default=None, min_length=1, max_length=100)
+    occupant_id: int | None = Field(default=None, description="Set to null to clear occupant")
+
+
+class RoomResponse(BaseModel):
+    id: int
+    building_id: int
+    occupant_id: int | None
+    room_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class TokenPayload(BaseModel):
     sub: str | None = None
     role: UserRole | None = None
