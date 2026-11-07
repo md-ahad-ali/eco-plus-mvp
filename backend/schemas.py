@@ -58,6 +58,30 @@ class Token(BaseModel):
     user: UserResponse
 
 
+class BuildingCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=150, description="Building name")
+    area_sqm: float = Field(..., gt=0, description="Floor area in square meters")
+    user_id: int | None = Field(
+        default=None,
+        description="Owner (building manager) id. Admin only; defaults to the current user",
+    )
+
+
+class BuildingUpdate(BaseModel):
+    name: str | None = Field(default=None, min_length=1, max_length=150)
+    area_sqm: float | None = Field(default=None, gt=0)
+    user_id: int | None = Field(default=None, description="Reassign owner (admin only)")
+
+
+class BuildingResponse(BaseModel):
+    id: int
+    user_id: int
+    name: str
+    area_sqm: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
 class TokenPayload(BaseModel):
     sub: str | None = None
     role: UserRole | None = None
