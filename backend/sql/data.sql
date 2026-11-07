@@ -1,10 +1,10 @@
 USE ecopulse;
 
-INSERT INTO users (id, username, password_hash, role) VALUES
-(1, 'demo_manager', 'mock_bcrypt_hash_not_for_login', 'building_manager'),
-(2, 'demo_admin', 'mock_bcrypt_hash_not_for_login', 'admin'),
-(3, 'occupant_alice', 'mock_bcrypt_hash_not_for_login', 'occupant'),
-(4, 'occupant_bob', 'mock_bcrypt_hash_not_for_login', 'occupant');
+INSERT INTO users (id, username, email, password_hash, role) VALUES
+(1, 'demo_manager', 'demo_manager@example.com', 'mock_bcrypt_hash_not_for_login', 'building_manager'),
+(2, 'demo_admin', 'demo_admin@example.com', 'mock_bcrypt_hash_not_for_login', 'admin'),
+(3, 'occupant_alice', 'occupant_alice@example.com', 'mock_bcrypt_hash_not_for_login', 'occupant'),
+(4, 'occupant_bob', 'occupant_bob@example.com', 'mock_bcrypt_hash_not_for_login', 'occupant');
 
 INSERT INTO buildings (id, user_id, name, area_sqm) VALUES
 (1, 1, 'Campus Building A', 800.0),

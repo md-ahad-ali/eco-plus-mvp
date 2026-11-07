@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 from collections.abc import Callable
 
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -65,18 +67,26 @@ def require_roles(*roles: UserRole) -> Callable[[User], User]:
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)) -> User:
     """Register a new user account."""
-    existing_user = db.execute(
-        select(User).where(User.username == user_in.username)
-    ).scalar_one_or_none()
+    existing_users = db.execute(
+        select(User).where(
+            or_(User.username == user_in.username, User.email == user_in.email)
+        )
+    ).scalars().all()
 
-    if existing_user:
+    if any(u.username == user_in.username for u in existing_users):
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Username already registered",
         )
+    if existing_users:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email already registered",
+        )
 
     new_user = User(
         username=user_in.username,
+        email=user_in.email,
         password_hash=hash_password(user_in.password),
         role=user_in.role,
     )
@@ -90,14 +100,18 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)) -> User:
 @router.post("/login", response_model=Token)
 def login(credentials: UserLogin, db: Session = Depends(get_db)) -> dict:
     """Authenticate credentials and return a signed JWT access token with user details."""
-    user = db.execute(
-        select(User).where(User.username == credentials.username)
-    ).scalar_one_or_none()
+    identifier = credentials.username.strip()
+    if "@" in identifier:
+        condition = User.email == identifier.lower()
+    else:
+        condition = User.username == identifier
+
+    user = db.execute(select(User).where(condition)).scalar_one_or_none()
 
     if not user or not verify_password(credentials.password, user.password_hash):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Invalid username or password",
+            detail="Invalid username/email or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
 
