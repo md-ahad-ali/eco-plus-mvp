@@ -69,3 +69,11 @@ export const getTimeseries = (
     signal,
   );
 
+export const getSustainability = (buildingId: number, range: Range, signal?: AbortSignal) =>
+  apiGet<Sustainability>(`${BASE}/sustainability/${buildingId}`, toRange(range), signal);
+
+export const getAnomalies = (buildingId: number, range: Range, z = 3, signal?: AbortSignal) =>
+  apiGet<Anomaly[]>(`${BASE}/anomalies`, { building_id: buildingId, z, ...toRange(range) }, signal);
+
+export const getForecast = (buildingId: number, historyDays = 14, signal?: AbortSignal) =>
+  apiGet<ForecastPoint[]>(`${BASE}/forecast/${buildingId}`, { history_days: historyDays }, signal);
