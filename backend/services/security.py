@@ -35,6 +35,16 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
         return False
 
 
+def generate_reset_token() -> tuple[str, str]:
+    """Return a (raw_token, sha256_hash) pair. Only the hash is stored in the database."""
+    raw = secrets.token_urlsafe(32)
+    return raw, hash_reset_token(raw)
+
+
+def hash_reset_token(raw_token: str) -> str:
+    return hashlib.sha256(raw_token.encode("utf-8")).hexdigest()
+
+
 def create_access_token(data: dict[str, Any], expires_delta: timedelta | None = None) -> str:
     """Generate a signed JWT access token with expiration."""
     to_encode = data.copy()

@@ -25,6 +25,20 @@ class PasswordChange(BaseModel):
     new_password: str = Field(..., min_length=6, description="New password (at least 6 characters)")
 
 
+class ForgotPasswordRequest(BaseModel):
+    email: EmailStr = Field(..., description="Email address of the account")
+
+    @field_validator("email")
+    @classmethod
+    def normalize_email(cls, value: str) -> str:
+        return value.strip().lower()
+
+
+class ResetPasswordRequest(BaseModel):
+    token: str = Field(..., min_length=1, description="Reset token received by email")
+    new_password: str = Field(..., min_length=6, description="New password (at least 6 characters)")
+
+
 class MessageResponse(BaseModel):
     message: str
 

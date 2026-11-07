@@ -9,6 +9,15 @@ CREATE TABLE users (
     role ENUM('admin', 'building_manager', 'occupant') NOT NULL DEFAULT 'occupant'
 ) ENGINE=InnoDB;
 
+CREATE TABLE password_reset_tokens (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    token_hash CHAR(64) UNIQUE NOT NULL,
+    expires_at DATETIME NOT NULL,
+    used_at DATETIME NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+
 CREATE TABLE buildings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,

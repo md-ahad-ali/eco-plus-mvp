@@ -1,28 +1,40 @@
 from __future__ import annotations
 
 from collections.abc import Callable
+from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
-from sqlalchemy import or_, select
+from sqlalchemy import or_, select, update
 from sqlalchemy.orm import Session
 
+from config import settings
 from database import get_db
-from models import User, UserRole
+from models import PasswordResetToken, User, UserRole
 from schemas import (
+    ForgotPasswordRequest,
     MessageResponse,
     PasswordChange,
+    ResetPasswordRequest,
     Token,
     UserCreate,
     UserLogin,
     UserResponse,
 )
+from services.mailer import send_password_reset_email
 from services.security import (
     create_access_token,
     decode_access_token,
+    generate_reset_token,
     hash_password,
+    hash_reset_token,
     verify_password,
 )
+
+
+def _utcnow() -> datetime:
+    """Naive UTC datetime, matching the MySQL DATETIME columns."""
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -162,3 +174,74 @@ def change_password(
     db.commit()
 
     return {"message": "Password changed successfully"}
+
+
+@router.post("/forgot-password", response_model=MessageResponse)
+def forgot_password(
+    payload: ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+) -> dict:
+    """Send a password reset link to the given email, if an account exists."""
+    generic_response = {
+        "message": "If an account with that email exists, a password reset link has been sent"
+    }
+
+    user = db.execute(
+        select(User).where(User.email == payload.email)
+    ).scalar_one_or_none()
+    if user is None:
+        return generic_response
+
+    now = _utcnow()
+    # Invalidate any previous unused tokens for this user.
+    db.execute(
+        update(PasswordResetToken)
+        .where(PasswordResetToken.user_id == user.id, PasswordResetToken.used_at.is_(None))
+        .values(used_at=now)
+    )
+
+    raw_token, token_hash = generate_reset_token()
+    db.add(
+        PasswordResetToken(
+            user_id=user.id,
+            token_hash=token_hash,
+            expires_at=now + timedelta(minutes=settings.password_reset_token_expire_minutes),
+        )
+    )
+    db.commit()
+
+    reset_link = f"{settings.frontend_url.rstrip('/')}/reset-password?token={raw_token}"
+    background_tasks.add_task(send_password_reset_email, user.email, user.username, reset_link)
+
+    return generic_response
+
+
+@router.post("/reset-password", response_model=MessageResponse)
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)) -> dict:
+    """Set a new password using a valid, unused, unexpired reset token."""
+    reset_token = db.execute(
+        select(PasswordResetToken).where(
+            PasswordResetToken.token_hash == hash_reset_token(payload.token)
+        )
+    ).scalar_one_or_none()
+
+    now = _utcnow()
+    if reset_token is None or reset_token.used_at is not None or reset_token.expires_at < now:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
+    user = db.get(User, reset_token.user_id)
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or expired reset token",
+        )
+
+    user.password_hash = hash_password(payload.new_password)
+    reset_token.used_at = now
+    db.commit()
+
+    return {"message": "Password has been reset successfully"}

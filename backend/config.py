@@ -14,6 +14,18 @@ class Settings(BaseSettings):
     algorithm: str = "HS256"
     access_token_expire_minutes: int = 60 * 24  # 1 day
 
+    # Password reset
+    password_reset_token_expire_minutes: int = 30
+    frontend_url: str = "http://localhost:5173"
+
+    # SMTP (leave smtp_host empty to log reset links to the console instead of emailing)
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from: str = "no-reply@ecopulse.local"
+    smtp_use_tls: bool = True
+
     model_config = SettingsConfigDict(
         env_file=".env",
         env_file_encoding="utf-8",
