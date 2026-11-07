@@ -9,7 +9,14 @@ from sqlalchemy.orm import Session
 
 from database import get_db
 from models import User, UserRole
-from schemas import Token, UserCreate, UserLogin, UserResponse
+from schemas import (
+    MessageResponse,
+    PasswordChange,
+    Token,
+    UserCreate,
+    UserLogin,
+    UserResponse,
+)
 from services.security import (
     create_access_token,
     decode_access_token,
@@ -130,3 +137,28 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)) -> dict:
 def get_current_user_profile(current_user: User = Depends(get_current_user)) -> User:
     """Retrieve details of the currently authenticated user."""
     return current_user
+
+
+@router.put("/change-password", response_model=MessageResponse)
+def change_password(
+    payload: PasswordChange,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> dict:
+    """Change the password of the currently authenticated user."""
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    if payload.new_password == payload.current_password:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="New password must be different from the current password",
+        )
+
+    current_user.password_hash = hash_password(payload.new_password)
+    db.commit()
+
+    return {"message": "Password changed successfully"}

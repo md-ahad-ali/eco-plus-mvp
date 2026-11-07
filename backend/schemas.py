@@ -20,6 +20,15 @@ class UserLogin(BaseModel):
     password: str = Field(..., min_length=1, description="Password")
 
 
+class PasswordChange(BaseModel):
+    current_password: str = Field(..., min_length=1, description="Current password")
+    new_password: str = Field(..., min_length=6, description="New password (at least 6 characters)")
+
+
+class MessageResponse(BaseModel):
+    message: str
+
+
 class UserResponse(BaseModel):
     id: int
     username: str
