@@ -27,7 +27,7 @@ export function logout(): void {
   localStorage.removeItem(USER_KEY);
 }
 
-/** admin và building_manager được tạo, sửa, xoá; occupant chỉ được xem. */
+/** admin and building_manager can create, edit and delete; occupant is view-only. */
 export function canManage(user: User | null): boolean {
   const manageRoles: Role[] = ["admin", "building_manager"];
   return user !== null && manageRoles.includes(user.role);
