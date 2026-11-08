@@ -1,6 +1,8 @@
+import type { ReactNode } from "react";
+
 interface DataTableProps {
   columns: string[];
-  rows: (string | number)[][];
+  rows: ReactNode[][];
 }
 
 const DataTable = ({ columns, rows }: DataTableProps) => {
