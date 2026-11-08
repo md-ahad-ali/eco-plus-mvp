@@ -1,50 +1,63 @@
-import { User } from "lucide-react";
+import { User as UserIcon } from "lucide-react";
+
+import { getMe } from "../api/auth";
+import type { Role } from "../api/auth";
+import AsyncState from "../components/AsyncState";
 import PageHeader from "../components/PageHeader";
+import { useApi } from "../hooks/useApi";
+
+const ROLE_LABELS: Record<Role, string> = {
+  admin: "Administrator",
+  building_manager: "Building manager",
+  occupant: "Occupant",
+};
+
+const inputClass =
+  "w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-sm text-gray-700 outline-none";
 
 const Profile = () => {
+  const { data: user, loading, error, refetch } = useApi(getMe, []);
+
   return (
     <div>
       <PageHeader
         title="My Profile"
-        description="View and manage your personal information."
+        description="View your personal information."
       />
 
-      <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-        <div className="mb-6 flex items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700">
-            <User size={30} />
-          </div>
+      <AsyncState loading={loading} error={error} onRetry={refetch}>
+        {user && (
+          <div className="max-w-2xl rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <div className="mb-6 flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-700">
+                <UserIcon size={30} />
+              </div>
 
-          <div>
-            <h2 className="font-semibold">Ahad Ali</h2>
-            <p className="text-sm text-gray-500">Administrator</p>
-          </div>
-        </div>
+              <div>
+                <h2 className="font-semibold">{user.username}</h2>
+                <p className="text-sm text-gray-500">{ROLE_LABELS[user.role]}</p>
+              </div>
+            </div>
 
-        <div className="space-y-5">
-          <div>
-            <label className="mb-2 block text-sm font-medium">Full Name</label>
-            <input
-              type="text"
-              defaultValue="Ahad Ali"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-green-600"
-            />
-          </div>
+            <div className="space-y-5">
+              <div>
+                <label className="mb-2 block text-sm font-medium">Username</label>
+                <input type="text" value={user.username} readOnly className={inputClass} />
+              </div>
 
-          <div>
-            <label className="mb-2 block text-sm font-medium">Email Address</label>
-            <input
-              type="email"
-              defaultValue="ahad@example.com"
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:border-green-600"
-            />
-          </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Email Address</label>
+                <input type="email" value={user.email} readOnly className={inputClass} />
+              </div>
 
-          <button className="rounded-lg bg-green-700 px-5 py-3 text-sm font-medium text-white hover:bg-green-800">
-            Save Changes
-          </button>
-        </div>
-      </div>
+              <div>
+                <label className="mb-2 block text-sm font-medium">Role</label>
+                <input type="text" value={ROLE_LABELS[user.role]} readOnly className={inputClass} />
+              </div>
+            </div>
+          </div>
+        )}
+      </AsyncState>
     </div>
   );
 };
