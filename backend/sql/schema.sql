@@ -22,6 +22,7 @@ CREATE TABLE buildings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     name VARCHAR(150),
+    address VARCHAR(255) NULL,
     area_sqm FLOAT,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;

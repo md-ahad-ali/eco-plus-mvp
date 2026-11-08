@@ -40,6 +40,7 @@ class Building(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String(150))
+    address: Mapped[str | None] = mapped_column(String(255), nullable=True)
     area_sqm: Mapped[float] = mapped_column(Float)
 
 

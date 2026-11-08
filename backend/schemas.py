@@ -60,6 +60,7 @@ class Token(BaseModel):
 
 class BuildingCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150, description="Building name")
+    address: str | None = Field(default=None, max_length=255, description="Building address")
     area_sqm: float = Field(..., gt=0, description="Floor area in square meters")
     user_id: int | None = Field(
         default=None,
@@ -69,6 +70,7 @@ class BuildingCreate(BaseModel):
 
 class BuildingUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=150)
+    address: str | None = Field(default=None, max_length=255)
     area_sqm: float | None = Field(default=None, gt=0)
     user_id: int | None = Field(default=None, description="Reassign owner (admin only)")
 
@@ -77,6 +79,7 @@ class BuildingResponse(BaseModel):
     id: int
     user_id: int
     name: str
+    address: str | None = None
     area_sqm: float
 
     model_config = ConfigDict(from_attributes=True)

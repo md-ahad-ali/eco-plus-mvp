@@ -95,7 +95,12 @@ def create_building(
         _validate_owner(db, payload.user_id)
         owner_id = payload.user_id
 
-    building = Building(name=payload.name.strip(), area_sqm=payload.area_sqm, user_id=owner_id)
+    building = Building(
+        name=payload.name.strip(),
+        address=payload.address.strip() if payload.address else None,
+        area_sqm=payload.area_sqm,
+        user_id=owner_id,
+    )
     db.add(building)
     db.commit()
     db.refresh(building)
@@ -123,6 +128,8 @@ def update_building(
         _validate_owner(db, data["user_id"])
     if "name" in data:
         data["name"] = data["name"].strip()
+    if "address" in data:
+        data["address"] = data["address"].strip()
 
     for field, value in data.items():
         setattr(building, field, value)
