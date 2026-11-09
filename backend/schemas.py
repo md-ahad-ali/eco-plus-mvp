@@ -50,6 +50,8 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: UserRole
+    building_name: str | None = None
+    room_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
