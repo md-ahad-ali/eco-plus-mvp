@@ -46,3 +46,15 @@ CREATE TABLE energy_logs (
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_logs_room_time ON energy_logs(room_id, `timestamp`);
+
+CREATE TABLE import_records (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    file_name VARCHAR(255) NOT NULL,
+    rows_imported INT NOT NULL DEFAULT 0,
+    rows_rejected INT NOT NULL DEFAULT 0,
+    status ENUM('pending', 'completed', 'partial', 'failed')
+        NOT NULL DEFAULT 'pending',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
