@@ -1,10 +1,14 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, String
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class UserRole(str, enum.Enum):
@@ -61,3 +65,12 @@ class EnergyLog(Base):
     timestamp: Mapped[datetime] = mapped_column(DateTime)
     energy_consumed_kwh: Mapped[float] = mapped_column(Float)
     indoor_temp: Mapped[float] = mapped_column(Float)
+
+
+class AIRecommendation(Base):
+    __tablename__ = "ai_recommendations"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    building_id: Mapped[int] = mapped_column(ForeignKey("buildings.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    recommendation_text: Mapped[str] = mapped_column(Text)
+    estimated_savings_percent: Mapped[float] = mapped_column(Float)

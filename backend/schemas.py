@@ -1,4 +1,6 @@
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from datetime import datetime
+
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator, model_validator
 
 from models import UserRole
 
@@ -109,3 +111,24 @@ class RoomResponse(BaseModel):
 class TokenPayload(BaseModel):
     sub: str | None = None
     role: UserRole | None = None
+
+
+class RecommendationRequest(BaseModel):
+    start: datetime | None = Field(default=None, description="Start of analysed period (inclusive)")
+    end: datetime | None = Field(default=None, description="End of analysed period (exclusive)")
+
+    @model_validator(mode="after")
+    def check_range(self):
+        if self.start and self.end and self.end <= self.start:
+            raise ValueError("end must be after start")
+        return self
+
+
+class RecommendationResponse(BaseModel):
+    id: int
+    building_id: int
+    created_at: datetime
+    recommendation_text: str
+    estimated_savings_percent: float
+
+    model_config = ConfigDict(from_attributes=True)

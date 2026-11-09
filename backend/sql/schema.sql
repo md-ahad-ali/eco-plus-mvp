@@ -46,3 +46,14 @@ CREATE TABLE energy_logs (
 ) ENGINE=InnoDB;
 
 CREATE INDEX idx_logs_room_time ON energy_logs(room_id, `timestamp`);
+
+CREATE TABLE ai_recommendations (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    building_id INT NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    recommendation_text TEXT NOT NULL,
+    estimated_savings_percent FLOAT NOT NULL,
+    FOREIGN KEY (building_id) REFERENCES buildings(id) ON DELETE CASCADE
+) ENGINE=InnoDB;
+ 
+CREATE INDEX idx_reco_building_time ON ai_recommendations(building_id, created_at);
