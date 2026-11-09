@@ -1,10 +1,10 @@
-# Eco Pulse MVP — Backend
+# EcoPulse MVP — Backend
 
-Eco Pulse MVP is a backend REST API built with **FastAPI** and **Uvicorn**. It uses environment-based configuration through Pydantic Settings and a local `.env` file.
+EcoPulse MVP is a backend REST API built with **FastAPI** and **Uvicorn**. It uses environment-based configuration through **Pydantic Settings** and a local `.env` file.
 
-## 1. Requirements
+## 1. Prerequisites
 
-Before getting started, make sure you have installed:
+Make sure the following tools are installed:
 
 - Python
 - pip
@@ -13,55 +13,46 @@ Before getting started, make sure you have installed:
 
 ## 2. Clone the Repository
 
-Clone the GitHub repository and navigate to the backend directory:
+Clone the repository and navigate to the backend directory:
 
 ```powershell
-git clone YOUR_REPOSITORY_URL
-cd eco-pulse-mvp\backend
+git clone https://github.com/md-ahad-ali/eco-plus-mvp.git
+cd eco-pulse-mvp/backend
 ```
-
-Replace `YOUR_REPOSITORY_URL` with the actual GitHub repository URL.
 
 If you have already cloned the repository, navigate directly to its backend directory.
 
-## 3. Activate the Virtual Environment
+## 3. Set Up the Virtual Environment
 
-The project uses a Python virtual environment named `.venv` to keep dependencies separate from your system-wide Python installation.
+The project uses a Python virtual environment named `.venv` to isolate project dependencies.
 
-### If `.venv` already exists
+### Create a virtual environment
 
-Activate it in PowerShell:
-
-```powershell
-.\.venv\Scripts\Activate.ps1
-```
-
-When activation succeeds, your terminal prompt should begin with `(.venv)`.
-If you want to deactivate .venv write `deactivate`
-
-### If `.venv` does not exist
-
-Create it:
+If `.venv` folder does not already exist:
 
 ```powershell
 python -m venv .venv
 ```
 
-If the `python` command is unavailable, try:
+Alternatively, use the Python launcher:
 
 ```powershell
 py -m venv .venv
 ```
 
-Activate the environment:
+### Activate the virtual environment
+
+In PowerShell:
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
+After successful activation, your terminal prompt should display `(.venv)`.
+
 ### If PowerShell blocks activation
 
-Run the following command in the current PowerShell session:
+Run:
 
 ```powershell
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
@@ -73,33 +64,39 @@ Then activate the environment again:
 .\.venv\Scripts\Activate.ps1
 ```
 
-This policy change applies only to the current PowerShell process.
-
-### Verify activation
+### Verify the environment
 
 ```powershell
 python -c "import sys; print(sys.executable)"
 ```
 
-The output should point to the Python executable inside `backend\.venv\Scripts\python.exe`.
+The output should point to:
 
-**Important:** Activate `.venv` before installing dependencies or running the backend. Reactivate it whenever you open a new terminal.
+```text
+backend\.venv\Scripts\python.exe
+```
+
+To deactivate the environment:
+
+```powershell
+deactivate
+```
+
+**Note:** Activate the virtual environment whenever you open a new terminal before installing dependencies or running the backend.
 
 ## 4. Install Dependencies
 
 With `.venv` activated, install the required packages:
 
 ```powershell
-python -m pip install fastapi uvicorn pydantic-settings
+pip install -r requirements.txt
 ```
 
-Use `python -m pip` to ensure packages are installed into the Python environment currently active in the terminal.
+## 5. Environment Configuration
 
-## 5. Configure Environment Variables
+The backend reads application settings from a `.env` file located in the backend directory.
 
-The backend reads its settings from a `.env` file in the backend directory.
-
-Create a local `.env` file with the following values:
+Create a `.env` file with the following configuration:
 
 ```dotenv
 APP_NAME=Eco Pulse API
@@ -109,53 +106,52 @@ PORT=8000
 DEBUG=true
 ```
 
-### Configuration reference
+### Configuration Reference
 
 | Variable | Description | Default |
 |---|---|---|
-| `APP_NAME` | API application name | `Eco Pulse API` |
-| `APP_VERSION` | API version | `1.0.0` |
-| `HOST` | Server bind address | `127.0.0.1` |
-| `PORT` | Server port | `8000` |
-| `DEBUG` | Enables development reload | `true` |
+| `APP_NAME` | Application name | Eco Pulse API |
+| `APP_VERSION` | Application version | 1.0.0 |
+| `HOST` | Server host address | 127.0.0.1 |
+| `PORT` | Server port | 8000 |
+| `DEBUG` | Enables development reload | true |
+
+**Configuration notes:**
 
 - `127.0.0.1` makes the API accessible from the local computer.
-- `0.0.0.0` listens on all network interfaces. Use it only when network access is intended and appropriately secured.
+- `0.0.0.0` listens on all network interfaces.
 - `DEBUG=true` enables automatic reloading during development.
 
-Do not commit secrets, credentials, or other sensitive values in `.env`.
+Do not commit `.env` files containing secrets or sensitive configuration to Git.
 
 ## 6. Run the Backend
 
-Ensure that your terminal is in the backend directory and `.venv` is active.
+Make sure you are in the backend directory and the virtual environment is activated.
 
-Start the application:
+Start the application using:
 
 ```powershell
 python run.py
 ```
 
-or
-```shell
-uvicorn main:app --reload
-```
-
 The API will be available at:
 
-`http://127.0.0.1:8000`
+**http://127.0.0.1:8000**
 
 To stop the server, press `Ctrl + C`.
 
 ## 7. API Endpoints
 
+The following endpoints are available:
+
 | Endpoint | Method | Description |
 |---|---|---|
 | `/` | GET | Returns a welcome message and application status |
 | `/health` | GET | Returns the API health status |
-| `/docs` | GET | Opens the interactive Swagger API documentation |
-| `/redoc` | GET | Opens the alternative ReDoc API documentation |
+| `/docs` | GET | Opens interactive Swagger API documentation |
+| `/redoc` | GET | Opens alternative ReDoc API documentation |
 
-### Example responses
+### Example Responses
 
 **GET /**
 
@@ -174,24 +170,24 @@ To stop the server, press `Ctrl + C`.
 }
 ```
 
-### API documentation
+### Interactive API Documentation
 
-Once the backend is running, open:
+Once the backend is running, access the following documentation interfaces:
 
-- Swagger UI: http://127.0.0.1:8000/docs
-- ReDoc: http://127.0.0.1:8000/redoc
+- **Swagger UI:** http://127.0.0.1:8000/docs
+- **ReDoc:** http://127.0.0.1:8000/redoc
 
-These interfaces allow developers to inspect and test the available endpoints.
+These interfaces allow developers to inspect, execute, and test available API endpoints.
 
 ## 8. Dependency Management
 
-After installing or updating project dependencies, update `requirements.txt` from the active virtual environment:
+After installing or updating dependencies, generate the `requirements.txt` file:
 
 ```powershell
 python -m pip freeze > requirements.txt
 ```
 
-Other developers can then install the recorded dependencies with:
+Other developers can install the recorded dependencies using:
 
 ```powershell
 python -m pip install -r requirements.txt
@@ -199,33 +195,50 @@ python -m pip install -r requirements.txt
 
 Keep `requirements.txt` updated whenever project dependencies change.
 
-## 9. Git and Environment Files
+## 9. Git Configuration
 
-The `.gitignore` file should exclude local environments, temporary Python files, and local configuration:
+The `.gitignore` file should exclude virtual environments, temporary Python files, and local configuration files.
+
+Recommended `.gitignore` entries:
 
 ```gitignore
+# Virtual environment
 .venv/
+
+# Python cache
 __pycache__/
 *.py[cod]
+
+# Environment variables
 .env
+
+# Testing
 .pytest_cache/
 ```
 
-The `.venv` directory should not be committed to Git. Each developer should create their own virtual environment.
+Maintain a `.env.example` file containing the required configuration variables and non-sensitive example values.
 
-For shared configuration, maintain a `.env.example` file containing the required variable names and non-sensitive example values. Commit `.env.example`, but keep the actual `.env` file local.
+Commit `.env.example` to Git, but never commit the actual `.env` file.
 
 ## 10. Troubleshooting
 
-### `ModuleNotFoundError`
+### ModuleNotFoundError
 
-Activate `.venv` and reinstall the dependencies:
+Make sure the virtual environment is activated and reinstall the dependencies:
 
 ```powershell
 python -m pip install fastapi uvicorn pydantic-settings
 ```
 
-### PowerShell blocks activation
+### pip Command Not Recognized
+
+Use Python to execute pip directly:
+
+```powershell
+python -m pip --version
+```
+
+### PowerShell Blocks Virtual Environment Activation
 
 Run:
 
@@ -234,44 +247,43 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 ```
 
-### Port 8000 is already in use
+### Port 8000 Is Already in Use
 
-Change `PORT` in `.env`, for example:
+Change the port in `.env`:
 
 ```dotenv
 PORT=8001
 ```
 
-Restart the backend and use `http://127.0.0.1:8001` instead.
+Restart the backend and access it at:
 
-### Confirm installed dependencies
+http://127.0.0.1:8001
+
+### Check Installed Dependencies
 
 ```powershell
 python -m pip list
 ```
 
-### Deactivate the virtual environment
-
-When finished, run:
-
-```powershell
-deactivate
-```
-
----
-
 ## Technology Stack
 
-- **Framework:** FastAPI
-- **ASGI server:** Uvicorn
-- **Settings management:** Pydantic Settings
-- **Environment configuration:** `.env`
-- **Version control:** Git and GitHub
+- **Backend Framework:** FastAPI
+- **ASGI Server:** Uvicorn
+- **Settings Management:** Pydantic Settings
+- **Configuration:** Environment variables and `.env`
+- **Programming Language:** Python
+- **Version Control:** Git and GitHub
 
 ## Development Notes
 
-- Keep dependencies isolated in `.venv`.
-- Keep environment-specific configuration out of version control.
-- Update `requirements.txt` when dependencies change.
-- Test API endpoints through Swagger UI before submitting changes.
-- Follow the repository's existing conventions when adding new endpoints or features.
+- Keep dependencies isolated in the `.venv` environment.
+- Keep sensitive configuration out of version control.
+- Update `requirements.txt` whenever dependencies change.
+- Test API endpoints using Swagger UI.
+- Follow the existing project structure and coding conventions when adding new features.
+
+---
+
+**EcoPulse MVP — AI-Powered Smart Energy Management System**
+
+FH Dortmund | Master of Digital Transformation
