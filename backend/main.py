@@ -1,10 +1,11 @@
+
 import os
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import analytics, auth, buildings, rooms, recommendations
+from routers import analytics, auth, buildings, rooms, recommendations, upload
 
 app = FastAPI(
     title=settings.app_name,
@@ -23,11 +24,13 @@ app.add_middleware(
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
+
 app.include_router(analytics.router)
 app.include_router(auth.router)
 app.include_router(buildings.router)
 app.include_router(rooms.router)
 app.include_router(recommendations.router)
+app.include_router(upload.router)
 
 
 @app.get("/")
