@@ -99,3 +99,20 @@ export async function apiSend<T>(
   });
   return handleResponse<T>(res);
 }
+
+
+export async function apiUpload<T>(
+  path: string,
+  formData: FormData,
+): Promise<T> {
+  const res = await fetch(new URL(path, BASE_URL), {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+      ...authHeaders(),
+    },
+    body: formData,
+  });
+
+  return handleResponse<T>(res);
+}
