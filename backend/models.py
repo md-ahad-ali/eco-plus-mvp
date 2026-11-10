@@ -12,13 +12,6 @@ class UserRole(str, enum.Enum):
     BUILDING_MANAGER = "building_manager"
     OCCUPANT = "occupant"
 
-class ImportStatus(str, enum.Enum):
-    PENDING = "pending"
-    COMPLETED = "completed"
-    PARTIAL = "partial"
-    FAILED = "failed"
-
-
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -68,30 +61,16 @@ class EnergyLog(Base):
     energy_consumed_kwh: Mapped[float] = mapped_column(Float)
     indoor_temp: Mapped[float] = mapped_column(Float)
 
-class ImportRecord(Base):
-    __tablename__ = "import_records"
-
+class AIRecommendation(Base):
+    __tablename__ = "ai_recommendations"
     id: Mapped[int] = mapped_column(primary_key=True)
+    building_id: Mapped[int] = mapped_column(ForeignKey("buildings.id", ondelete="CASCADE"))
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
+    recommendation_text: Mapped[str] = mapped_column(Text)
+    estimated_savings_percent: Mapped[float] = mapped_column(Float)
 
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey("users.id", ondelete="CASCADE"),
-        nullable=False,
-    )
-
-    file_name: Mapped[str] = mapped_column(String(255), nullable=False)
-
-    rows_imported: Mapped[int] = mapped_column(default=0, nullable=False)
-
-    rows_rejected: Mapped[int] = mapped_column(default=0, nullable=False)
-
-    status: Mapped[ImportStatus] = mapped_column(
-        Enum(ImportStatus, values_callable=lambda obj: [e.value for e in obj]),
-        default=ImportStatus.PENDING,
-        nullable=False,
-    )
-
-    created_at: Mapped[datetime] = mapped_column(
-        DateTime,
-        default=datetime.utcnow,
-        nullable=False,
-    )
+class CsvUpload(Base):
+    __tablename__ = "csv_uploads"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    status: Mapped[str] = mapped_column(String(20), default="processing")
