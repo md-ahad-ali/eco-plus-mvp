@@ -7,6 +7,8 @@ export interface User {
   username: string;
   email: string;
   role: Role;
+  building_name?: string | null;
+  room_name?: string | null;
 }
 
 export interface AuthResponse {

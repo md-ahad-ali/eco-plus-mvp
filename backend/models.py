@@ -1,10 +1,14 @@
 import enum
-from datetime import datetime
+from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Enum, Float, ForeignKey, String
+from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import Base
+
+
+def _utcnow() -> datetime:
+    return datetime.now(timezone.utc).replace(tzinfo=None)
 
 
 class UserRole(str, enum.Enum):
@@ -68,6 +72,7 @@ class AIRecommendation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     recommendation_text: Mapped[str] = mapped_column(Text)
     estimated_savings_percent: Mapped[float] = mapped_column(Float)
+
 
 class CsvUpload(Base):
     __tablename__ = "csv_uploads"
