@@ -17,7 +17,7 @@ log = logging.getLogger(__name__)
 # CONFIGURATION - paste your NEW OpenAI API key below
 # WARNING: do not commit this file to GitHub with the real key in it.
 # ---------------------------------------------------------------------------
-OPENAI_API_KEY = ""
+OPENAI_API_KEY = "gg"
 
 MODEL = "gpt-6-luna"
 MAX_TOKENS = 1500       # S4-NFR10: output token limit (higher because newer models may use tokens for reasoning)

@@ -13,16 +13,18 @@ app = FastAPI(
     debug=settings.debug
 )
 
-origins = os.getenv(
-    "CORS_ORIGINS",
-    "http://localhost:5173,http://127.0.0.1:5173",
-).split(",")
+origins = [
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://0.0.0.0:5173",
+]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[o.strip() for o in origins],
-    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(analytics.router)
@@ -32,7 +34,6 @@ app.include_router(rooms.router)
 app.include_router(recommendations.router)
 app.include_router(upload.router)
 app.include_router(energy_logs.router)
-
 
 
 @app.get("/")
