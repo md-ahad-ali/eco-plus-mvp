@@ -9,12 +9,14 @@ import { useApi } from "../hooks/useApi";
 import {
   getAnomalies,
   getBuildingTotals,
+  getBuildingTotalsByUser,
   getForecast,
   getRoomTotals,
   getSustainability,
   getTimeseries,
   type Granularity,
 } from "../api/analytics";
+import { getCurrentUser } from "../lib/auth";
 
 const field = "rounded-lg border border-gray-300 bg-white p-2.5 text-sm outline-none focus:border-green-600";
 const fmt = (n: number) => n.toLocaleString("en-GB", { maximumFractionDigits: 2 });
@@ -22,13 +24,20 @@ const hourLabel = (iso: string) =>
   new Date(iso).toLocaleString("en-GB", { weekday: "short", hour: "2-digit", minute: "2-digit" });
 
 const Analytics = () => {
+  const user = getCurrentUser();
   const [buildingId, setBuildingId] = useState<number | undefined>();
   const [granularity, setGranularity] = useState<Granularity>("day");
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const range = { start: start || undefined, end: end || undefined };
 
-  const buildings = useApi((s) => getBuildingTotals({}, s), []);
+  const buildings = useApi(
+    (s) =>
+      user
+        ? getBuildingTotalsByUser(user.id, {}, s)
+        : Promise.resolve([]),
+    [user?.id]
+  );
 
   useEffect(() => {
     if (buildingId === undefined && buildings.data?.length) {

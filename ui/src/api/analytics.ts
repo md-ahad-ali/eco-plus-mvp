@@ -56,6 +56,17 @@ export const getSummary = (range: Range & { building_id?: number }, signal?: Abo
 export const getBuildingTotals = (range: Range, signal?: AbortSignal) =>
   apiGet<BuildingTotals[]>(`${BASE}/buildings`, toRange(range), signal);
 
+export const getBuildingTotalsByUser = (
+  userId: number,
+  range: Range,
+  signal?: AbortSignal
+) =>
+  apiGet<BuildingTotals[]>(
+    `${BASE}/buildings/${userId}`,
+    toRange(range),
+    signal
+  );
+
 export const getRoomTotals = (buildingId: number, range: Range, signal?: AbortSignal) =>
   apiGet<RoomTotals[]>(`${BASE}/buildings/${buildingId}/rooms`, toRange(range), signal);
 
