@@ -83,9 +83,23 @@ def require_roles(*roles: UserRole) -> Callable[[User], User]:
     return role_checker
 
 
-@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
-def register(user_in: UserCreate, db: Session = Depends(get_db)) -> User:
-    """Register a new user account."""
+def _issue_token(user: User) -> dict:
+    """Build the login response (JWT + user details) for an authenticated user."""
+    access_token = create_access_token(
+        data={"sub": user.username, "role": user.role.value}
+    )
+    return {"access_token": access_token, "token_type": "bearer", "user": user}
+
+
+@router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
+def register(user_in: UserCreate, db: Session = Depends(get_db)) -> dict:
+    """Register a new account and log it in. Admin accounts can't be self-registered."""
+    if user_in.role == UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin accounts cannot be created through public registration",
+        )
+
     existing_users = db.execute(
         select(User).where(
             or_(User.username == user_in.username, User.email == user_in.email)
@@ -113,7 +127,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)) -> User:
     db.commit()
     db.refresh(new_user)
 
-    return new_user
+    return _issue_token(new_user)
 
 
 @router.post("/login", response_model=Token)
@@ -134,15 +148,7 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)) -> dict:
             headers={"WWW-Authenticate": "Bearer"},
         )
 
-    access_token = create_access_token(
-        data={"sub": user.username, "role": user.role.value}
-    )
-
-    return {
-        "access_token": access_token,
-        "token_type": "bearer",
-        "user": user,
-    }
+    return _issue_token(user)
 
 
 @router.get("/me", response_model=UserResponse)
