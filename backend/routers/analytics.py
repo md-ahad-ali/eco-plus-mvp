@@ -21,6 +21,11 @@ def get_by_building(start: datetime | None = None, end: datetime | None = None,
                     db: Session = Depends(get_db)):
     return analytics.by_building(db, start, end)
 
+@router.get("/buildings/{user_id}")
+def get_by_building(user_id: int, start: datetime | None = None, end: datetime | None = None,
+                    db: Session = Depends(get_db)):
+    return analytics.by_building_with_user(user_id, db, start, end)
+
 @router.get("/buildings/{building_id}/rooms")
 def get_by_room(building_id: int, start: datetime | None = None, end: datetime | None = None,
                 db: Session = Depends(get_db)):

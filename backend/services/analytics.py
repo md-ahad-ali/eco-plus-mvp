@@ -4,7 +4,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from config import CO2_FACTOR, TARIFF
-from models import Building, EnergyLog, Room
+from models import Building, EnergyLog, Room, User
 
 BUCKETS = {"hour": "%Y-%m-%d %H:00", "day": "%Y-%m-%d", "month": "%Y-%m"}
 
@@ -48,6 +48,18 @@ def by_building(db: Session, start=None, end=None) -> list[dict]:
         select(Building.id, Building.name, func.sum(EnergyLog.energy_consumed_kwh))
         .join(Room, Room.building_id == Building.id)
         .join(EnergyLog, EnergyLog.room_id == Room.id)
+        .group_by(Building.id, Building.name)
+    )
+    rows = db.execute(_range(stmt, start, end)).all()
+    return [{"building_id": i, "name": n, **_totals(k)} for i, n, k in rows]
+
+def by_building_with_user(user_id: int, db: Session, start=None, end=None) -> list[dict]:
+    stmt = (
+        select(Building.id, Building.name, func.sum(EnergyLog.energy_consumed_kwh))
+        .join(User, User.id == Building.user_id)
+        .join(Room, Room.building_id == Building.id)
+        .join(EnergyLog, EnergyLog.room_id == Room.id)
+        .where(User.id == user_id)
         .group_by(Building.id, Building.name)
     )
     rows = db.execute(_range(stmt, start, end)).all()
