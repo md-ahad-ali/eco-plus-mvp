@@ -1,5 +1,6 @@
 import { useRef, useState, type DragEvent } from "react";
 import { CheckCircle2, FileText, Loader2, Upload, XCircle, Zap } from "lucide-react";
+import EnergyLogsTable from "../components/EnergyLogsTable";
 import PageHeader from "../components/PageHeader";
 import AsyncState from "../components/AsyncState";
 import { useApi } from "../hooks/useApi";
@@ -45,6 +46,7 @@ const EnergyData = () => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -78,6 +80,7 @@ const EnergyData = () => {
     setResult(null);
     try {
       setResult(await uploadCsv(file));
+      setRefreshKey((k) => k + 1);
       reset();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Upload failed.");
@@ -249,6 +252,8 @@ const EnergyData = () => {
             )}
           </AsyncState>
         </div>
+          {/* Energy Consumption Records section */}
+        <EnergyLogsTable refreshKey={refreshKey} />
       </div>
     </div>
   );

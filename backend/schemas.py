@@ -151,3 +151,22 @@ class CsvImportResult(BaseModel):
     rows_total: int
     rows_inserted: int
     rows_deleted: int
+
+class EnergyLogRow(BaseModel):
+    id: int
+    timestamp: datetime
+    building_id: int
+    building_name: str
+    room_id: int
+    room_name: str
+    energy_consumed_kwh: float
+    indoor_temp: float
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class EnergyLogPage(BaseModel):
+    items: list[EnergyLogRow]
+    total: int
+    skip: int
+    limit: int
