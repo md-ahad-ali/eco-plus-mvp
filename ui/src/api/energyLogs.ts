@@ -26,15 +26,32 @@ export interface EnergyLogQuery {
   limit: number;
 }
 
-export const getEnergyLogs = (q: EnergyLogQuery, signal?: AbortSignal) =>
-  apiGet<EnergyLogPage>(
-    "/api/energy-logs",
-    {
-      building_id: q.building_id,
-      start: q.start ? `${q.start}T00:00:00` : undefined,
-      end: q.end ? `${q.end}T23:59:59` : undefined,
-      skip: q.skip,
-      limit: q.limit,
-    },
+
+
+export const getEnergyLogs = (q: EnergyLogQuery, signal?: AbortSignal) => {
+  console.log(q);
+
+  const params = new URLSearchParams();
+
+  if (q.building_id !== undefined && q.building_id !== null) {
+    params.set("building_id", String(q.building_id));
+  }
+
+  if (q.start !== undefined && q.start !== null) {
+    params.set("start", String(q.start));
+  }
+
+  if (q.end !== undefined && q.end !== null) {
+    params.set("end", String(q.end));
+  }
+
+  params.set("skip", String(q.skip ?? 0));
+  params.set("limit", String(q.limit ?? 200));
+
+  return apiGet<EnergyLogPage>(
+    `/api/energy-logs?${params.toString()}`,
+    undefined,
     signal,
   );
+};
+
