@@ -5,7 +5,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from routers import analytics, auth, buildings, rooms, recommendations, upload
+from routers import analytics, auth, buildings, rooms, recommendations, upload, energy_logs
 
 app = FastAPI(
     title=settings.app_name,
@@ -31,6 +31,8 @@ app.include_router(buildings.router)
 app.include_router(rooms.router)
 app.include_router(recommendations.router)
 app.include_router(upload.router)
+app.include_router(energy_logs.router)
+
 
 
 @app.get("/")
