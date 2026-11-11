@@ -34,7 +34,7 @@ class Settings(BaseSettings):
 
 load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:password@127.0.0.1:3306/ecopulse")
+DATABASE_URL = os.getenv("DATABASE_URL", "mysql+pymysql://root:password@127.0.0.1:33061/ecopulse")
 TARIFF = float(os.getenv("TARIFF_EUR_PER_KWH", "0.30"))
 CO2_FACTOR = float(os.getenv("CO2_KG_PER_KWH", "0.40"))
 BENCHMARK = float(os.getenv("BENCHMARK_KWH_PER_SQM_DAY", "0.06"))
@@ -45,10 +45,10 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440
 OPENAI_API_KEY = "your-api-key"
 
 MODEL = "gpt-6-luna"
-MAX_TOKENS = 1500       # S4-NFR10: output token limit (higher because newer models may use tokens for reasoning)
-DAILY_CAP = 20          # S4-NFR10: daily request cap
+MAX_TOKENS = 1500
+DAILY_CAP = 20
 TIMEOUT_S = 30
-MAX_RETRIES = 3         # S4-NFR01: retry with backoff
+MAX_RETRIES = 3
 MAX_TEXT_LEN = 2000
 
 settings = Settings()
