@@ -5,7 +5,17 @@ export interface Room {
   building_id: number;
   room_name: string;
   occupant_id: number | null;
+  occupant_username: string | null;
 }
+
+export interface OccupantOption {
+  id: number;
+  username: string;
+  email: string;
+}
+
+export const searchOccupants = (q: string, signal?: AbortSignal) =>
+  apiGet<OccupantOption[]>("/api/occupants", { q }, signal);
 
 export interface RoomInput {
   building_id?: number;

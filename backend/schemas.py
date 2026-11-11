@@ -105,7 +105,18 @@ class RoomResponse(BaseModel):
     id: int
     building_id: int
     occupant_id: int | None
+    occupant_username: str | None = None
     room_name: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class OccupantOption(BaseModel):
+    """Lightweight user info used by the occupant picker on the room form."""
+
+    id: int
+    username: str
+    email: str
 
     model_config = ConfigDict(from_attributes=True)
 

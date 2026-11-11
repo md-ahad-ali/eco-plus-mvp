@@ -2,7 +2,7 @@ import enum
 from datetime import datetime, timezone
 
 from sqlalchemy import DateTime, Enum, Float, ForeignKey, String, Text
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from database import Base
 
@@ -55,6 +55,12 @@ class Room(Base):
         ForeignKey("users.id"), nullable=True
     )
     room_name: Mapped[str] = mapped_column(String(100))
+
+    occupant: Mapped[User | None] = relationship(lazy="joined")
+
+    @property
+    def occupant_username(self) -> str | None:
+        return self.occupant.username if self.occupant else None
 
 
 class EnergyLog(Base):

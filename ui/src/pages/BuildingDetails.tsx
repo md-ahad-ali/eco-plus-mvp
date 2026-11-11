@@ -8,6 +8,8 @@ import DataTable from "../components/DataTable";
 import AsyncState from "../components/AsyncState";
 import Modal from "../components/Modal";
 import FormField from "../components/FormField";
+import OccupantPicker from "../components/OccupantPicker";
+import type { SelectedOccupant } from "../components/OccupantPicker";
 import { useApi } from "../hooks/useApi";
 import { getBuilding } from "../api/buildings";
 import { listRooms, createRoom, updateRoom, deleteRoom } from "../api/rooms";
@@ -24,8 +26,13 @@ interface RoomFormProps {
 
 const RoomForm = ({ buildingId, initial, onSubmit, onCancel }: RoomFormProps) => {
   const [roomName, setRoomName] = useState(initial?.room_name ?? "");
-  const [occupantId, setOccupantId] = useState(
-    initial?.occupant_id != null ? String(initial.occupant_id) : "",
+  const [occupant, setOccupant] = useState<SelectedOccupant | null>(
+    initial?.occupant_id != null
+      ? {
+          id: initial.occupant_id,
+          username: initial.occupant_username ?? `User #${initial.occupant_id}`,
+        }
+      : null,
   );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -38,7 +45,7 @@ const RoomForm = ({ buildingId, initial, onSubmit, onCancel }: RoomFormProps) =>
       await onSubmit({
         building_id: buildingId,
         room_name: roomName,
-        occupant_id: occupantId.trim() === "" ? null : Number(occupantId),
+        occupant_id: occupant?.id ?? null,
       });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Request failed. Please try again.");
@@ -54,15 +61,7 @@ const RoomForm = ({ buildingId, initial, onSubmit, onCancel }: RoomFormProps) =>
         onChange={(e) => setRoomName(e.target.value)}
         required
       />
-      <FormField
-        label="Occupant ID (optional)"
-        type="number"
-        min={1}
-        step={1}
-        value={occupantId}
-        onChange={(e) => setOccupantId(e.target.value)}
-        placeholder="Leave empty for no occupant"
-      />
+      <OccupantPicker label="Occupant (optional)" value={occupant} onChange={setOccupant} />
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -123,7 +122,7 @@ const BuildingDetails = () => {
   const rows = (rooms.data ?? []).map((room) => [
     room.id,
     room.room_name,
-    room.occupant_id ?? "—",
+    room.occupant_username ?? "—",
     showActions ? (
       <div className="flex items-center gap-3">
         <button
@@ -196,7 +195,7 @@ const BuildingDetails = () => {
       </div>
 
       <AsyncState loading={rooms.loading} error={rooms.error} onRetry={rooms.refetch}>
-        <DataTable columns={["ID", "Room Name", "Occupant ID", ""]} rows={rows} />
+        <DataTable columns={["ID", "Room Name", "Occupant", ""]} rows={rows} />
       </AsyncState>
 
       {modal?.mode === "create" ? (

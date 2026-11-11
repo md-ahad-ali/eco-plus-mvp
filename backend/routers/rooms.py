@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from database import get_db
 from models import Building, Room, User, UserRole
 from routers.auth import get_current_user, require_roles
 from routers.buildings import _get_building_or_404
-from schemas import RoomCreate, RoomResponse, RoomUpdate
+from schemas import OccupantOption, RoomCreate, RoomResponse, RoomUpdate
 
 router = APIRouter(prefix="/api", tags=["rooms"])
 
@@ -38,6 +38,22 @@ def _ensure_manages_building(db: Session, building_id: int, user: User) -> Build
 def _validate_occupant(db: Session, occupant_id: int) -> None:
     if db.get(User, occupant_id) is None:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Occupant user not found")
+
+
+@router.get("/occupants", response_model=list[OccupantOption])
+def search_occupants(
+    q: str | None = Query(default=None, description="Search by username or email"),
+    limit: int = Query(default=10, ge=1, le=50),
+    _: User = Depends(can_manage),
+    db: Session = Depends(get_db),
+) -> list[User]:
+    """Search occupant accounts by username/email, for assigning them to a room."""
+    stmt = select(User).where(User.role == UserRole.OCCUPANT)
+    if q and q.strip():
+        pattern = f"%{q.strip()}%"
+        stmt = stmt.where(or_(User.username.ilike(pattern), User.email.ilike(pattern)))
+    stmt = stmt.order_by(User.username).limit(limit)
+    return list(db.execute(stmt).scalars().all())
 
 
 @router.get("/buildings/{building_id}/rooms", response_model=list[RoomResponse])
