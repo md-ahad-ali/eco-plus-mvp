@@ -10,7 +10,9 @@ import {
 import PageHeader from "../components/PageHeader";
 import AsyncState from "../components/AsyncState";
 import { useApi } from "../hooks/useApi";
-import { getBuildingTotals } from "../api/analytics";
+
+import { getBuildingTotalsByUser } from "../api/analytics";
+import { getCurrentUser } from "../lib/auth";
 
 import {
   createRecommendation,
@@ -24,8 +26,6 @@ import {
   recommendationErrorMessage,
 } from "../lib/recommendations";
 
-
-
 const field =
   "rounded-lg border border-gray-300 bg-white p-2.5 text-sm outline-none focus:border-green-600";
 
@@ -37,7 +37,7 @@ const parseUtc = (iso: string) =>
   new Date(
     /(Z|[+-]\d\d:?\d\d)$/.test(iso)
       ? iso
-      : `${iso}Z`,
+      : `${iso}Z`
   );
 
 const formatDate = (iso: string) =>
@@ -59,12 +59,9 @@ const toItems = (text: string) =>
   text
     .split(/\n+/)
     .map((line) =>
-      line.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").trim(),
+      line.replace(/^\s*(?:\d+[.)]|[-*•])\s*/, "").trim()
     )
     .filter(Boolean);
-
-
-    
 
 const RecommendationBody = ({
   text,
@@ -98,8 +95,6 @@ const RecommendationBody = ({
     </ul>
   );
 };
-
-
 
 const DeleteControl = ({
   busy,
@@ -150,8 +145,6 @@ const DeleteControl = ({
   );
 };
 
-
-
 const Recommendations = () => {
   const [buildingId, setBuildingId] = useState<number | undefined>();
   const [start, setStart] = useState("");
@@ -165,10 +158,16 @@ const Recommendations = () => {
 
   const [notice, setNotice] = useState<string | null>(null);
 
-  // Load building data.
+  // Get the currently authenticated user.
+  const user = getCurrentUser();
+
+  // Load only buildings belonging to the current user.
   const buildings = useApi(
-    (s) => getBuildingTotals({}, s),
-    [],
+    (s) =>
+      user
+        ? getBuildingTotalsByUser(user.id, {}, s)
+        : Promise.resolve([]),
+    [user?.id]
   );
 
   // Automatically select the first building.
@@ -181,20 +180,35 @@ const Recommendations = () => {
     }
   }, [buildings.data, buildingId]);
 
+  // Reset selected building if it is no longer available.
+  useEffect(() => {
+    if (
+      buildings.data &&
+      buildingId !== undefined &&
+      !buildings.data.some(
+        (building) => building.building_id === buildingId
+      )
+    ) {
+      setBuildingId(
+        buildings.data.length
+          ? buildings.data[0].building_id
+          : undefined
+      );
+    }
+  }, [buildings.data, buildingId]);
+
   // Load recommendation history.
   const history = useApi<Recommendation[]>(
     (s) =>
       buildingId
         ? listRecommendations(buildingId, limit, 0, s)
         : Promise.resolve([]),
-    [buildingId, limit],
+    [buildingId, limit]
   );
 
   const invalidRange = Boolean(
-    start && end && end < start,
+    start && end && end < start
   );
-
-
 
   const generate = async () => {
     if (!buildingId || invalidRange || generating) return;
@@ -219,8 +233,6 @@ const Recommendations = () => {
     }
   };
 
-
-
   const remove = async (id: number) => {
     setDeletingId(id);
     setNotice(null);
@@ -239,8 +251,6 @@ const Recommendations = () => {
   const [latest, ...older] = items;
 
   const canLoadMore = items.length === limit;
-
-
 
   return (
     <div>
@@ -263,12 +273,10 @@ const Recommendations = () => {
           <div className="space-y-6">
 
             {/* Controls */}
-
             <div>
               <div className="flex flex-wrap items-end gap-4">
 
                 {/* Building selection */}
-
                 <label className="text-sm font-medium">
                   <span className="mb-1 block">
                     Building
@@ -296,7 +304,6 @@ const Recommendations = () => {
                 </label>
 
                 {/* Start date */}
-
                 <label className="text-sm font-medium">
                   <span className="mb-1 block">
                     From
@@ -312,7 +319,6 @@ const Recommendations = () => {
                 </label>
 
                 {/* End date */}
-
                 <label className="text-sm font-medium">
                   <span className="mb-1 block">
                     To
@@ -328,7 +334,6 @@ const Recommendations = () => {
                 </label>
 
                 {/* Generate button */}
-
                 <button
                   type="button"
                   onClick={generate}
@@ -368,7 +373,6 @@ const Recommendations = () => {
             </div>
 
             {/* Error notification */}
-
             {notice && (
               <div
                 role="alert"
@@ -379,7 +383,6 @@ const Recommendations = () => {
             )}
 
             {/* Recommendation history */}
-
             {history.error ? (
               <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">
                 <p>
@@ -411,17 +414,15 @@ const Recommendations = () => {
             ) : (
               <>
                 {/* Latest recommendation */}
-
                 <section
                   aria-labelledby="latest-heading"
                   className="grid overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm md:grid-cols-[15rem_1fr]"
                 >
                   {/* Estimated savings */}
-
                   <div className="flex flex-col justify-center bg-green-700 p-6 text-white">
                     <p className="text-5xl font-bold tabular-nums">
                       {formatPercent(
-                        latest.estimated_savings_percent,
+                        latest.estimated_savings_percent
                       )}
                       %
                     </p>
@@ -432,7 +433,6 @@ const Recommendations = () => {
                   </div>
 
                   {/* Recommendation content */}
-
                   <div className="p-6">
                     <div className="mb-4 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
                       <h3
@@ -468,7 +468,6 @@ const Recommendations = () => {
                 </section>
 
                 {/* Earlier recommendations */}
-
                 {older.length > 0 && (
                   <section aria-labelledby="history-heading">
                     <h3
@@ -499,7 +498,7 @@ const Recommendations = () => {
                             >
                               <span className="w-16 shrink-0 font-semibold tabular-nums text-green-700">
                                 {formatPercent(
-                                  rec.estimated_savings_percent,
+                                  rec.estimated_savings_percent
                                 )}
                                 %
                               </span>
@@ -548,7 +547,6 @@ const Recommendations = () => {
                 )}
 
                 {/* Pagination */}
-
                 {canLoadMore && (
                   <button
                     type="button"
