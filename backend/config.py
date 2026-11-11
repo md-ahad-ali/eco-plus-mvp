@@ -42,4 +42,13 @@ SECRET_KEY = os.getenv("SECRET_KEY", "ecopulse-secret-key-change-in-production-o
 ALGORITHM = os.getenv("ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "1440"))
 
+OPENAI_API_KEY = "your-api-key"
+
+MODEL = "gpt-6-luna"
+MAX_TOKENS = 1500       # S4-NFR10: output token limit (higher because newer models may use tokens for reasoning)
+DAILY_CAP = 20          # S4-NFR10: daily request cap
+TIMEOUT_S = 30
+MAX_RETRIES = 3         # S4-NFR01: retry with backoff
+MAX_TEXT_LEN = 2000
+
 settings = Settings()

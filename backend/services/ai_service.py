@@ -8,23 +8,19 @@ from openai import APIConnectionError, APITimeoutError, OpenAI, RateLimitError
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+import config
 from models import AIRecommendation, Building, EnergyLog, Room
 from services import analytics, anomaly
 
 log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# CONFIGURATION - paste your NEW OpenAI API key below
-# WARNING: do not commit this file to GitHub with the real key in it.
-# ---------------------------------------------------------------------------
-OPENAI_API_KEY = "gg"
-
-MODEL = "gpt-6-luna"
-MAX_TOKENS = 1500       # S4-NFR10: output token limit (higher because newer models may use tokens for reasoning)
-DAILY_CAP = 20          # S4-NFR10: daily request cap
-TIMEOUT_S = 30
-MAX_RETRIES = 3         # S4-NFR01: retry with backoff
-MAX_TEXT_LEN = 2000
+OPENAI_API_KEY = config.OPENAI_API_KEY
+MODEL = config.MODEL
+MAX_TOKENS = config.MAX_TOKENS
+DAILY_CAP = config.DAILY_CAP
+TIMEOUT_S = config.TIMEOUT_S
+MAX_RETRIES = config.MAX_RETRIES
+MAX_TEXT_LEN = config.MAX_TEXT_LEN
 
 SYSTEM_PROMPT = (
     "You are an energy-efficiency advisor for buildings. Using only the aggregated "
