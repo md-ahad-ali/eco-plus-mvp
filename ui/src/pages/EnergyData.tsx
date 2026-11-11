@@ -217,7 +217,7 @@ const EnergyData = () => {
           </div>
         )}
 
-        <div>
+        {allowed && <div>
           <h3 className="mb-3 text-lg font-semibold text-gray-800">Upload History</h3>
           <AsyncState loading={uploads.loading} error={uploads.error} onRetry={uploads.refetch}>
             {uploads.data?.length ? (
@@ -254,6 +254,7 @@ const EnergyData = () => {
             )}
           </AsyncState>
         </div>
+        }
         <EnergyLogsTable refreshKey={refreshKey} />
       </div>
     </div>
