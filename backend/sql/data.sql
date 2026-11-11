@@ -8,33 +8,24 @@ VALUES
  'mock_bcrypt_hash_not_for_login', 'building_manager'),
 
 (2, 'demo_admin', 'demo_admin@example.com',
- 'mock_bcrypt_hash_not_for_login', 'admin'),
-
-(3, 'occupant_alice', 'occupant_alice@example.com',
- 'mock_bcrypt_hash_not_for_login', 'occupant'),
-
-(4, 'occupant_bob', 'occupant_bob@example.com',
- 'mock_bcrypt_hash_not_for_login', 'occupant');
+ 'mock_bcrypt_hash_not_for_login', 'admin');
 
 
 INSERT INTO buildings
-(id, user_id, name, address, area_sqm)
+(id, user_id, name, area_sqm)
 VALUES
-(1, 1, 'Campus Building A',
- 'Dortmund, Germany', 800.0),
-
-(2, 1, 'Campus Building B',
- 'Dortmund, Germany', 900.0);
+(1, 1, 'Campus Building A', 800.0),
+(2, 1, 'Campus Building B', 900.0);
 
 INSERT INTO rooms
-(id, building_id, occupant_id, room_name)
+(id, building_id, room_name)
 VALUES
-(1, 1, 3, 'Lecture Hall 101'),
-(2, 1, 4, 'Computer Lab 102'),
-(3, 1, NULL, 'Office 103'),
-(4, 2, 3, 'Library Floor 1'),
-(5, 2, 4, 'Library Floor 2'),
-(6, 2, NULL, 'Server Room');
+(1, 1, 'Lecture Hall 101'),
+(2, 1, 'Computer Lab 102'),
+(3, 1, 'Office 103'),
+(4, 2, 'Library Floor 1'),
+(5, 2, 'Library Floor 2'),
+(6, 2, 'Server Room');
 
 SET SESSION cte_max_recursion_depth = 1000;
 

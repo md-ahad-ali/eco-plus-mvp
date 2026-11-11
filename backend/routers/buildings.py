@@ -1,26 +1,22 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
-from sqlalchemy import select
+from sqlalchemy import or_, select
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Building, Room, User, UserRole
+from models import Building, User, UserRole
 from routers.auth import get_current_user, require_roles
-from schemas import BuildingCreate, BuildingResponse, BuildingUpdate
+from schemas import BuildingCreate, BuildingResponse, BuildingUpdate, ManagerOption
 
 router = APIRouter(prefix="/api/buildings", tags=["buildings"])
 
-can_manage = require_roles(UserRole.ADMIN, UserRole.BUILDING_MANAGER)
+admin_only = require_roles(UserRole.ADMIN)
 
 
 def _visible_buildings_stmt(user: User):
-    """Admin sees all, manager sees owned buildings, occupant sees buildings they live in."""
+    """Admin sees all buildings; a building manager only sees the buildings they manage."""
     stmt = select(Building)
-    if user.role == UserRole.BUILDING_MANAGER:
+    if user.role != UserRole.ADMIN:
         stmt = stmt.where(Building.user_id == user.id)
-    elif user.role == UserRole.OCCUPANT:
-        stmt = stmt.where(
-            Building.id.in_(select(Room.building_id).where(Room.occupant_id == user.id))
-        )
     return stmt
 
 
@@ -33,22 +29,14 @@ def _get_building_or_404(db: Session, building_id: int, user: User) -> Building:
     return building
 
 
-def _ensure_can_modify(building: Building, user: User) -> None:
-    if user.role != UserRole.ADMIN and building.user_id != user.id:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="You do not have permission to modify this building",
-        )
-
-
-def _validate_owner(db: Session, owner_id: int) -> None:
-    owner = db.get(User, owner_id)
-    if owner is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Owner user not found")
-    if owner.role not in (UserRole.ADMIN, UserRole.BUILDING_MANAGER):
+def _validate_manager(db: Session, manager_id: int) -> None:
+    manager = db.get(User, manager_id)
+    if manager is None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Manager user not found")
+    if manager.role != UserRole.BUILDING_MANAGER:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Owner must be an admin or building manager",
+            detail="Selected user is not a building manager",
         )
 
 
@@ -68,6 +56,22 @@ def list_buildings(
     return list(db.execute(stmt).scalars().all())
 
 
+@router.get("/managers", response_model=list[ManagerOption])
+def search_managers(
+    q: str | None = Query(default=None, description="Search by username or email"),
+    limit: int = Query(default=10, ge=1, le=50),
+    _: User = Depends(admin_only),
+    db: Session = Depends(get_db),
+) -> list[User]:
+    """Search building managers by username/email, for assigning them to a building."""
+    stmt = select(User).where(User.role == UserRole.BUILDING_MANAGER)
+    if q and q.strip():
+        pattern = f"%{q.strip()}%"
+        stmt = stmt.where(or_(User.username.ilike(pattern), User.email.ilike(pattern)))
+    stmt = stmt.order_by(User.username).limit(limit)
+    return list(db.execute(stmt).scalars().all())
+
+
 @router.get("/{building_id}", response_model=BuildingResponse)
 def get_building(
     building_id: int,
@@ -81,25 +85,15 @@ def get_building(
 @router.post("", response_model=BuildingResponse, status_code=status.HTTP_201_CREATED)
 def create_building(
     payload: BuildingCreate,
-    current_user: User = Depends(can_manage),
+    _: User = Depends(admin_only),
     db: Session = Depends(get_db),
 ) -> Building:
-    """Create a building. Managers always own what they create; admins may assign an owner."""
-    owner_id = current_user.id
-    if payload.user_id is not None and payload.user_id != current_user.id:
-        if current_user.role != UserRole.ADMIN:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only admins can assign a building to another user",
-            )
-        _validate_owner(db, payload.user_id)
-        owner_id = payload.user_id
-
+    """Create a building and assign it to a building manager (admin only)."""
+    _validate_manager(db, payload.user_id)
     building = Building(
         name=payload.name.strip(),
-        address=payload.address.strip() if payload.address else None,
         area_sqm=payload.area_sqm,
-        user_id=owner_id,
+        user_id=payload.user_id,
     )
     db.add(building)
     db.commit()
@@ -111,25 +105,17 @@ def create_building(
 def update_building(
     building_id: int,
     payload: BuildingUpdate,
-    current_user: User = Depends(can_manage),
+    current_user: User = Depends(admin_only),
     db: Session = Depends(get_db),
 ) -> Building:
-    """Partially update a building (only provided fields are changed)."""
+    """Partially update a building (admin only; only provided fields are changed)."""
     building = _get_building_or_404(db, building_id, current_user)
-    _ensure_can_modify(building, current_user)
 
     data = payload.model_dump(exclude_unset=True, exclude_none=True)
     if "user_id" in data and data["user_id"] != building.user_id:
-        if current_user.role != UserRole.ADMIN:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Only admins can reassign building ownership",
-            )
-        _validate_owner(db, data["user_id"])
+        _validate_manager(db, data["user_id"])
     if "name" in data:
         data["name"] = data["name"].strip()
-    if "address" in data:
-        data["address"] = data["address"].strip()
 
     for field, value in data.items():
         setattr(building, field, value)
@@ -141,12 +127,11 @@ def update_building(
 @router.delete("/{building_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_building(
     building_id: int,
-    current_user: User = Depends(can_manage),
+    current_user: User = Depends(admin_only),
     db: Session = Depends(get_db),
 ) -> Response:
-    """Delete a building. Rooms and energy logs are removed by DB cascade."""
+    """Delete a building (admin only). Rooms and energy logs are removed by DB cascade."""
     building = _get_building_or_404(db, building_id, current_user)
-    _ensure_can_modify(building, current_user)
     db.delete(building)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

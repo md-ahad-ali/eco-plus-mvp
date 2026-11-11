@@ -3,15 +3,9 @@ import type { FormEvent } from "react";
 import { Link, useNavigate } from "react-router";
 
 import { register } from "../../api/auth";
-import type { Role } from "../../api/auth";
 import { ApiError } from "../../lib/api";
 import { saveSession } from "../../lib/auth";
-import FormField, { FormSelect } from "../../components/FormField";
-
-const ROLE_OPTIONS: { value: Role; label: string }[] = [
-  { value: "occupant", label: "Occupant" },
-  { value: "building_manager", label: "Building manager" },
-];
+import FormField from "../../components/FormField";
 
 const Register = () => {
   const navigate = useNavigate();
@@ -19,7 +13,6 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [role, setRole] = useState<Role>("occupant");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -34,7 +27,7 @@ const Register = () => {
 
     setSubmitting(true);
     try {
-      const auth = await register(username, email, password, role);
+      const auth = await register(username, email, password);
       saveSession(auth);
       navigate("/");
     } catch (err) {
@@ -79,12 +72,6 @@ const Register = () => {
           onChange={(e) => setConfirmPassword(e.target.value)}
           minLength={6}
           required
-        />
-        <FormSelect
-          label="Role"
-          value={role}
-          onChange={(e) => setRole(e.target.value as Role)}
-          options={ROLE_OPTIONS}
         />
 
         {error ? <p className="text-sm text-red-600">{error}</p> : null}

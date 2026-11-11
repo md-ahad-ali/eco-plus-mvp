@@ -22,8 +22,8 @@ CREATE TABLE users (
     username VARCHAR(100) NOT NULL UNIQUE,
     email VARCHAR(255) NOT NULL UNIQUE,
     password_hash VARCHAR(255) NOT NULL,
-    role ENUM('admin', 'building_manager', 'occupant')
-        NOT NULL DEFAULT 'occupant'
+    role ENUM('admin', 'building_manager')
+        NOT NULL DEFAULT 'building_manager'
 ) ENGINE=InnoDB;
 
 CREATE TABLE password_reset_tokens (
@@ -41,7 +41,6 @@ CREATE TABLE buildings (
     id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     name VARCHAR(150) NOT NULL,
-    address VARCHAR(255) NULL,
     area_sqm FLOAT,
     FOREIGN KEY (user_id)
         REFERENCES users(id)
@@ -51,14 +50,10 @@ CREATE TABLE buildings (
 CREATE TABLE rooms (
     id INT AUTO_INCREMENT PRIMARY KEY,
     building_id INT NOT NULL,
-    occupant_id INT NULL,
     room_name VARCHAR(100) NOT NULL,
     FOREIGN KEY (building_id)
         REFERENCES buildings(id)
-        ON DELETE CASCADE,
-    FOREIGN KEY (occupant_id)
-        REFERENCES users(id)
-        ON DELETE SET NULL
+        ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE energy_logs (

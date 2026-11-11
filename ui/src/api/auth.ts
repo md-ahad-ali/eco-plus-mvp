@@ -1,14 +1,12 @@
 import { apiGet, apiSend } from "../lib/api";
 
-export type Role = "admin" | "building_manager" | "occupant";
+export type Role = "admin" | "building_manager";
 
 export interface User {
   id: number;
   username: string;
   email: string;
   role: Role;
-  building_name?: string | null;
-  room_name?: string | null;
 }
 
 export interface AuthResponse {
@@ -20,8 +18,8 @@ export interface AuthResponse {
 export const login = (username: string, password: string) =>
   apiSend<AuthResponse>("POST", "/api/auth/login", { username, password });
 
-export const register = (username: string, email: string, password: string, role: Role) =>
-  apiSend<AuthResponse>("POST", "/api/auth/register", { username, email, password, role });
+export const register = (username: string, email: string, password: string) =>
+  apiSend<AuthResponse>("POST", "/api/auth/register", { username, email, password });
 
 export const forgotPassword = (email: string) =>
   apiSend<{ message: string }>("POST", "/api/auth/forgot-password", { email });

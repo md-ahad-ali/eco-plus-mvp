@@ -27,7 +27,12 @@ export function logout(): void {
   localStorage.removeItem(USER_KEY);
 }
 
-/** admin and building_manager can create, edit and delete; occupant is view-only. */
+/** Only admins can add, edit and delete buildings and rooms. */
+export function isAdmin(user: User | null): boolean {
+  return user?.role === "admin";
+}
+
+/** admin and building_manager can upload and manage energy data (managers: their own buildings). */
 export function canManage(user: User | null): boolean {
   const manageRoles: Role[] = ["admin", "building_manager"];
   return user !== null && manageRoles.includes(user.role);

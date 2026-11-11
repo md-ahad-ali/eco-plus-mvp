@@ -14,7 +14,7 @@ def _utcnow() -> datetime:
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     BUILDING_MANAGER = "building_manager"
-    OCCUPANT = "occupant"
+
 
 class User(Base):
     __tablename__ = "users"
@@ -24,7 +24,7 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, values_callable=lambda obj: [e.value for e in obj]),
-        default=UserRole.OCCUPANT,
+        default=UserRole.BUILDING_MANAGER,
         nullable=False,
     )
 
@@ -43,24 +43,20 @@ class Building(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     name: Mapped[str] = mapped_column(String(150))
-    address: Mapped[str | None] = mapped_column(String(255), nullable=True)
     area_sqm: Mapped[float] = mapped_column(Float)
+
+    manager: Mapped[User] = relationship(lazy="joined")
+
+    @property
+    def manager_username(self) -> str:
+        return self.manager.username
 
 
 class Room(Base):
     __tablename__ = "rooms"
     id: Mapped[int] = mapped_column(primary_key=True)
     building_id: Mapped[int] = mapped_column(ForeignKey("buildings.id"))
-    occupant_id: Mapped[int | None] = mapped_column(
-        ForeignKey("users.id"), nullable=True
-    )
     room_name: Mapped[str] = mapped_column(String(100))
-
-    occupant: Mapped[User | None] = relationship(lazy="joined")
-
-    @property
-    def occupant_username(self) -> str | None:
-        return self.occupant.username if self.occupant else None
 
 
 class EnergyLog(Base):

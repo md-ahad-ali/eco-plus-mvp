@@ -8,14 +8,12 @@ import DataTable from "../components/DataTable";
 import AsyncState from "../components/AsyncState";
 import Modal from "../components/Modal";
 import FormField from "../components/FormField";
-import OccupantPicker from "../components/OccupantPicker";
-import type { SelectedOccupant } from "../components/OccupantPicker";
 import { useApi } from "../hooks/useApi";
 import { getBuilding } from "../api/buildings";
 import { listRooms, createRoom, updateRoom, deleteRoom } from "../api/rooms";
 import type { Room, RoomInput } from "../api/rooms";
 import { ApiError } from "../lib/api";
-import { canManage, getCurrentUser } from "../lib/auth";
+import { getCurrentUser, isAdmin } from "../lib/auth";
 
 interface RoomFormProps {
   buildingId: number;
@@ -26,14 +24,6 @@ interface RoomFormProps {
 
 const RoomForm = ({ buildingId, initial, onSubmit, onCancel }: RoomFormProps) => {
   const [roomName, setRoomName] = useState(initial?.room_name ?? "");
-  const [occupant, setOccupant] = useState<SelectedOccupant | null>(
-    initial?.occupant_id != null
-      ? {
-          id: initial.occupant_id,
-          username: initial.occupant_username ?? `User #${initial.occupant_id}`,
-        }
-      : null,
-  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -45,7 +35,6 @@ const RoomForm = ({ buildingId, initial, onSubmit, onCancel }: RoomFormProps) =>
       await onSubmit({
         building_id: buildingId,
         room_name: roomName,
-        occupant_id: occupant?.id ?? null,
       });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Request failed. Please try again.");
@@ -61,7 +50,6 @@ const RoomForm = ({ buildingId, initial, onSubmit, onCancel }: RoomFormProps) =>
         onChange={(e) => setRoomName(e.target.value)}
         required
       />
-      <OccupantPicker label="Occupant (optional)" value={occupant} onChange={setOccupant} />
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -93,7 +81,7 @@ const BuildingDetails = () => {
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
   const user = getCurrentUser();
-  const showActions = canManage(user);
+  const showActions = isAdmin(user);
 
   const building = useApi((signal) => getBuilding(buildingId, signal), [buildingId]);
   const rooms = useApi(
@@ -122,7 +110,6 @@ const BuildingDetails = () => {
   const rows = (rooms.data ?? []).map((room) => [
     room.id,
     room.room_name,
-    room.occupant_username ?? "—",
     showActions ? (
       <div className="flex items-center gap-3">
         <button
@@ -195,7 +182,7 @@ const BuildingDetails = () => {
       </div>
 
       <AsyncState loading={rooms.loading} error={rooms.error} onRetry={rooms.refetch}>
-        <DataTable columns={["ID", "Room Name", "Occupant", ""]} rows={rows} />
+        <DataTable columns={["ID", "Room Name", ""]} rows={rows} />
       </AsyncState>
 
       {modal?.mode === "create" ? (

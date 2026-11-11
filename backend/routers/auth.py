@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from config import settings
 from database import get_db
-from models import Building, PasswordResetToken, Room, User, UserRole
+from models import PasswordResetToken, User, UserRole
 from schemas import (
     ForgotPasswordRequest,
     MessageResponse,
@@ -93,13 +93,7 @@ def _issue_token(user: User) -> dict:
 
 @router.post("/register", response_model=Token, status_code=status.HTTP_201_CREATED)
 def register(user_in: UserCreate, db: Session = Depends(get_db)) -> dict:
-    """Register a new account and log it in. Admin accounts can't be self-registered."""
-    if user_in.role == UserRole.ADMIN:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Admin accounts cannot be created through public registration",
-        )
-
+    """Register a new building-manager account and log it in. Admin role is set directly in the database."""
     existing_users = db.execute(
         select(User).where(
             or_(User.username == user_in.username, User.email == user_in.email)
@@ -121,7 +115,7 @@ def register(user_in: UserCreate, db: Session = Depends(get_db)) -> dict:
         username=user_in.username,
         email=user_in.email,
         password_hash=hash_password(user_in.password),
-        role=user_in.role,
+        role=UserRole.BUILDING_MANAGER,
     )
     db.add(new_user)
     db.commit()
@@ -152,25 +146,9 @@ def login(credentials: UserLogin, db: Session = Depends(get_db)) -> dict:
 
 
 @router.get("/me", response_model=UserResponse)
-def get_current_user_profile(
-    current_user: User = Depends(get_current_user),
-    db: Session = Depends(get_db),
-) -> User:
+def get_current_user_profile(current_user: User = Depends(get_current_user)) -> User:
     """Retrieve details of the currently authenticated user."""
-    profile = UserResponse.model_validate(current_user)
-
-    if current_user.role == UserRole.OCCUPANT:
-        room_and_building = db.execute(
-            select(Room, Building)
-            .join(Building, Building.id == Room.building_id)
-            .where(Room.occupant_id == current_user.id)
-        ).first()
-        if room_and_building:
-            room, building = room_and_building
-            profile.room_name = room.room_name
-            profile.building_name = building.name
-
-    return profile
+    return current_user
 
 
 @router.put("/change-password", response_model=MessageResponse)

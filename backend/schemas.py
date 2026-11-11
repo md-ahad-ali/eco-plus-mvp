@@ -9,7 +9,6 @@ class UserCreate(BaseModel):
     username: str = Field(..., min_length=3, max_length=100, description="Unique username")
     email: EmailStr = Field(..., max_length=255, description="Unique email address")
     password: str = Field(..., min_length=6, description="Password (at least 6 characters)")
-    role: UserRole = Field(default=UserRole.OCCUPANT, description="Role of the user")
 
     @field_validator("email")
     @classmethod
@@ -50,8 +49,6 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: UserRole
-    building_name: str | None = None
-    room_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -64,26 +61,21 @@ class Token(BaseModel):
 
 class BuildingCreate(BaseModel):
     name: str = Field(..., min_length=1, max_length=150, description="Building name")
-    address: str | None = Field(default=None, max_length=255, description="Building address")
     area_sqm: float = Field(..., gt=0, description="Floor area in square meters")
-    user_id: int | None = Field(
-        default=None,
-        description="Owner (building manager) id. Admin only; defaults to the current user",
-    )
+    user_id: int = Field(..., description="Id of the building manager who manages this building")
 
 
 class BuildingUpdate(BaseModel):
     name: str | None = Field(default=None, min_length=1, max_length=150)
-    address: str | None = Field(default=None, max_length=255)
     area_sqm: float | None = Field(default=None, gt=0)
-    user_id: int | None = Field(default=None, description="Reassign owner (admin only)")
+    user_id: int | None = Field(default=None, description="Reassign to another building manager")
 
 
 class BuildingResponse(BaseModel):
     id: int
     user_id: int
+    manager_username: str
     name: str
-    address: str | None = None
     area_sqm: float
 
     model_config = ConfigDict(from_attributes=True)
@@ -92,27 +84,23 @@ class BuildingResponse(BaseModel):
 class RoomCreate(BaseModel):
     building_id: int = Field(..., description="Building the room belongs to")
     room_name: str = Field(..., min_length=1, max_length=100)
-    occupant_id: int | None = Field(default=None, description="User living in the room")
 
 
 class RoomUpdate(BaseModel):
     building_id: int | None = None
     room_name: str | None = Field(default=None, min_length=1, max_length=100)
-    occupant_id: int | None = Field(default=None, description="Set to null to clear occupant")
 
 
 class RoomResponse(BaseModel):
     id: int
     building_id: int
-    occupant_id: int | None
-    occupant_username: str | None = None
     room_name: str
 
     model_config = ConfigDict(from_attributes=True)
 
 
-class OccupantOption(BaseModel):
-    """Lightweight user info used by the occupant picker on the room form."""
+class ManagerOption(BaseModel):
+    """Lightweight user info used by the building-manager picker on the building form."""
 
     id: int
     username: str

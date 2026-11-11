@@ -1,25 +1,25 @@
 import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
 
-import { searchOccupants } from "../api/rooms";
-import type { OccupantOption } from "../api/rooms";
+import { searchManagers } from "../api/buildings";
+import type { ManagerOption } from "../api/buildings";
 
-export interface SelectedOccupant {
+export interface SelectedManager {
   id: number;
   username: string;
 }
 
-interface OccupantPickerProps {
+interface ManagerPickerProps {
   label: string;
-  value: SelectedOccupant | null;
-  onChange: (value: SelectedOccupant | null) => void;
+  value: SelectedManager | null;
+  onChange: (value: SelectedManager | null) => void;
 }
 
-/** Search occupants by username/email and pick one; the parent receives the user id. */
-const OccupantPicker = ({ label, value, onChange }: OccupantPickerProps) => {
+/** Search building managers by username/email and pick one; the parent receives the user id. */
+const ManagerPicker = ({ label, value, onChange }: ManagerPickerProps) => {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
-  const [options, setOptions] = useState<OccupantOption[]>([]);
+  const [options, setOptions] = useState<ManagerOption[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,14 +30,14 @@ const OccupantPicker = ({ label, value, onChange }: OccupantPickerProps) => {
     const timer = setTimeout(() => {
       setLoading(true);
       setError(null);
-      searchOccupants(query.trim(), controller.signal)
+      searchManagers(query.trim(), controller.signal)
         .then((data) => {
           setOptions(data);
           setLoading(false);
         })
         .catch(() => {
           if (controller.signal.aborted) return;
-          setError("Could not load occupants");
+          setError("Could not load building managers");
           setLoading(false);
         });
     }, 250);
@@ -47,13 +47,13 @@ const OccupantPicker = ({ label, value, onChange }: OccupantPickerProps) => {
     };
   }, [query, open, value]);
 
-  const select = (option: OccupantOption) => {
+  const select = (option: ManagerOption) => {
     onChange({ id: option.id, username: option.username });
     setQuery("");
     setOpen(false);
   };
 
-  const inputId = "occupant-picker";
+  const inputId = "manager-picker";
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -66,7 +66,7 @@ const OccupantPicker = ({ label, value, onChange }: OccupantPickerProps) => {
           <span className="font-medium text-gray-900">{value.username}</span>
           <button
             type="button"
-            aria-label="Remove occupant"
+            aria-label="Change building manager"
             onClick={() => onChange(null)}
             className="text-gray-400 hover:text-red-600"
           >
@@ -108,7 +108,7 @@ const OccupantPicker = ({ label, value, onChange }: OccupantPickerProps) => {
               ) : error ? (
                 <li className="px-3.5 py-2 text-sm text-red-600">{error}</li>
               ) : options.length === 0 ? (
-                <li className="px-3.5 py-2 text-sm text-gray-500">No occupants found</li>
+                <li className="px-3.5 py-2 text-sm text-gray-500">No building managers found</li>
               ) : (
                 options.map((option) => (
                   <li key={option.id}>
@@ -131,9 +131,8 @@ const OccupantPicker = ({ label, value, onChange }: OccupantPickerProps) => {
           ) : null}
         </div>
       )}
-      <p className="text-xs text-gray-500">Leave empty for no occupant</p>
     </div>
   );
 };
 
-export default OccupantPicker;
+export default ManagerPicker;

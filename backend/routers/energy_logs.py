@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from database import get_db
 from models import Building, EnergyLog, Room, User
 from routers.auth import get_current_user
+from routers.buildings import _get_building_or_404
 from schemas import EnergyLogPage, EnergyLogRow
 
 router = APIRouter(prefix="/api/energy-logs", tags=["energy-logs"])
@@ -20,7 +21,7 @@ def list_energy_logs(
     end: datetime | None = Query(default=None, description="Inclusive"),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=25, ge=1, le=200),
-    _: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
     """Energy readings joined with their room and building, newest first."""
@@ -33,6 +34,9 @@ def list_energy_logs(
             "skip": skip,
             "limit": limit,
         }
+
+    # 404 if the building doesn't exist or isn't managed by the current user.
+    _get_building_or_404(db, building_id, current_user)
 
     conditions = [Building.id == building_id]
 

@@ -8,6 +8,8 @@ import DataTable from "../components/DataTable";
 import AsyncState from "../components/AsyncState";
 import Modal from "../components/Modal";
 import FormField from "../components/FormField";
+import ManagerPicker from "../components/ManagerPicker";
+import type { SelectedManager } from "../components/ManagerPicker";
 import { useApi } from "../hooks/useApi";
 import {
   listBuildings,
@@ -17,7 +19,7 @@ import {
 } from "../api/buildings";
 import type { Building, BuildingInput } from "../api/buildings";
 import { ApiError } from "../lib/api";
-import { canManage, getCurrentUser } from "../lib/auth";
+import { getCurrentUser, isAdmin } from "../lib/auth";
 
 interface BuildingFormProps {
   initial?: Building;
@@ -28,15 +30,22 @@ interface BuildingFormProps {
 const BuildingForm = ({ initial, onSubmit, onCancel }: BuildingFormProps) => {
   const [name, setName] = useState(initial?.name ?? "");
   const [area, setArea] = useState(initial ? String(initial.area_sqm) : "");
+  const [manager, setManager] = useState<SelectedManager | null>(
+    initial ? { id: initial.user_id, username: initial.manager_username } : null,
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!manager) {
+      setError("Please select a building manager.");
+      return;
+    }
     setSubmitting(true);
     try {
-      await onSubmit({ name, area_sqm: Number(area) });
+      await onSubmit({ name, area_sqm: Number(area), user_id: manager.id });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Request failed. Please try again.");
       setSubmitting(false);
@@ -55,6 +64,7 @@ const BuildingForm = ({ initial, onSubmit, onCancel }: BuildingFormProps) => {
         onChange={(e) => setArea(e.target.value)}
         required
       />
+      <ManagerPicker label="Building manager" value={manager} onChange={setManager} />
 
       {error ? <p className="text-sm text-red-600">{error}</p> : null}
 
@@ -84,7 +94,7 @@ const Buildings = () => {
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
   const user = getCurrentUser();
-  const showActions = canManage(user);
+  const showActions = isAdmin(user);
 
   const { data, loading, error, refetch } = useApi(
     (signal) => listBuildings(search, signal),
@@ -116,6 +126,7 @@ const Buildings = () => {
       {building.name}
     </Link>,
     building.area_sqm,
+    building.manager_username,
     showActions ? (
       <div className="flex items-center gap-3">
         <button
@@ -143,7 +154,7 @@ const Buildings = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader
           title="Buildings & Rooms"
-          description="Manage your buildings and their rooms."
+          description={showActions ? "Manage buildings and their rooms." : "Buildings you manage and their rooms."}
         />
 
         {showActions ? (
@@ -169,7 +180,7 @@ const Buildings = () => {
       </div>
 
       <AsyncState loading={loading} error={error} onRetry={refetch}>
-        <DataTable columns={["Building Name", "Area (m²)", ""]} rows={rows} />
+        <DataTable columns={["Building Name", "Area (m²)", "Manager", ""]} rows={rows} />
       </AsyncState>
 
       {modal?.mode === "create" ? (

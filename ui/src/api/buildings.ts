@@ -2,6 +2,8 @@ import { apiGet, apiSend } from "../lib/api";
 
 export interface Building {
   id: number;
+  user_id: number;
+  manager_username: string;
   name: string;
   area_sqm: number;
 }
@@ -9,7 +11,18 @@ export interface Building {
 export interface BuildingInput {
   name?: string;
   area_sqm?: number;
+  /** Id of the building manager who manages the building. */
+  user_id?: number;
 }
+
+export interface ManagerOption {
+  id: number;
+  username: string;
+  email: string;
+}
+
+export const searchManagers = (q: string, signal?: AbortSignal) =>
+  apiGet<ManagerOption[]>("/api/buildings/managers", { q }, signal);
 
 export const listBuildings = (q?: string, signal?: AbortSignal) =>
   apiGet<Building[]>("/api/buildings", { q }, signal);

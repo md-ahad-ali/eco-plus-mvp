@@ -7,7 +7,6 @@ import type { Role } from "../api/auth";
 const ROLE_LABELS: Record<Role, string> = {
   admin: "Administrator",
   building_manager: "Building manager",
-  occupant: "Occupant",
 };
 
 function initialsOf(username: string): string {

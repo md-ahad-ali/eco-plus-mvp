@@ -9,7 +9,6 @@ import { useApi } from "../hooks/useApi";
 const ROLE_LABELS: Record<Role, string> = {
   admin: "Administrator",
   building_manager: "Building manager",
-  occupant: "Occupant",
 };
 
 const inputClass =
@@ -55,29 +54,6 @@ const Profile = () => {
                 <input type="text" value={ROLE_LABELS[user.role]} readOnly className={inputClass} />
               </div>
 
-              {user.role === "occupant" && (
-                <>
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">My Building</label>
-                    <input
-                      type="text"
-                      value={user.building_name ?? "Not assigned"}
-                      readOnly
-                      className={inputClass}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="mb-2 block text-sm font-medium">My Room</label>
-                    <input
-                      type="text"
-                      value={user.room_name ?? "Not assigned"}
-                      readOnly
-                      className={inputClass}
-                    />
-                  </div>
-                </>
-              )}
             </div>
           </div>
         )}
