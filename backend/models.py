@@ -16,7 +16,6 @@ class UserRole(str, enum.Enum):
     BUILDING_MANAGER = "building_manager"
     OCCUPANT = "occupant"
 
-
 class User(Base):
     __tablename__ = "users"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -66,7 +65,6 @@ class EnergyLog(Base):
     energy_consumed_kwh: Mapped[float] = mapped_column(Float)
     indoor_temp: Mapped[float] = mapped_column(Float)
 
-
 class AIRecommendation(Base):
     __tablename__ = "ai_recommendations"
     id: Mapped[int] = mapped_column(primary_key=True)
@@ -74,3 +72,10 @@ class AIRecommendation(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime, default=_utcnow)
     recommendation_text: Mapped[str] = mapped_column(Text)
     estimated_savings_percent: Mapped[float] = mapped_column(Float)
+
+
+class CsvUpload(Base):
+    __tablename__ = "csv_uploads"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    filename: Mapped[str] = mapped_column(String(255))
+    status: Mapped[str] = mapped_column(String(20), default="processing")

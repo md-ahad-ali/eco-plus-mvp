@@ -50,6 +50,8 @@ class UserResponse(BaseModel):
     username: str
     email: str
     role: UserRole
+    building_name: str | None = None
+    room_name: str | None = None
 
     model_config = ConfigDict(from_attributes=True)
 
@@ -132,3 +134,20 @@ class RecommendationResponse(BaseModel):
     estimated_savings_percent: float
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class CsvUploadResponse(BaseModel):
+    id: int
+    filename: str
+    status: str
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class CsvImportResult(BaseModel):
+    upload_id: int
+    filename: str
+    status: str
+    rows_total: int
+    rows_inserted: int
+    rows_deleted: int

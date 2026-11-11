@@ -24,9 +24,7 @@ import {
   recommendationErrorMessage,
 } from "../lib/recommendations";
 
-/* ------------------------------------------------------------------ */
-/* Helpers                                                             */
-/* ------------------------------------------------------------------ */
+
 
 const field =
   "rounded-lg border border-gray-300 bg-white p-2.5 text-sm outline-none focus:border-green-600";
@@ -65,9 +63,8 @@ const toItems = (text: string) =>
     )
     .filter(Boolean);
 
-/* ------------------------------------------------------------------ */
-/* Recommendation Body                                                 */
-/* ------------------------------------------------------------------ */
+
+    
 
 const RecommendationBody = ({
   text,
@@ -102,9 +99,7 @@ const RecommendationBody = ({
   );
 };
 
-/* ------------------------------------------------------------------ */
-/* Delete Control                                                      */
-/* ------------------------------------------------------------------ */
+
 
 const DeleteControl = ({
   busy,
@@ -155,9 +150,7 @@ const DeleteControl = ({
   );
 };
 
-/* ------------------------------------------------------------------ */
-/* Recommendations Page                                                */
-/* ------------------------------------------------------------------ */
+
 
 const Recommendations = () => {
   const [buildingId, setBuildingId] = useState<number | undefined>();
@@ -201,9 +194,7 @@ const Recommendations = () => {
     start && end && end < start,
   );
 
-  /* ---------------------------------------------------------------- */
-  /* Generate Recommendation                                          */
-  /* ---------------------------------------------------------------- */
+
 
   const generate = async () => {
     if (!buildingId || invalidRange || generating) return;
@@ -228,9 +219,7 @@ const Recommendations = () => {
     }
   };
 
-  /* ---------------------------------------------------------------- */
-  /* Delete Recommendation                                            */
-  /* ---------------------------------------------------------------- */
+
 
   const remove = async (id: number) => {
     setDeletingId(id);
@@ -251,9 +240,7 @@ const Recommendations = () => {
 
   const canLoadMore = items.length === limit;
 
-  /* ---------------------------------------------------------------- */
-  /* Render                                                            */
-  /* ---------------------------------------------------------------- */
+
 
   return (
     <div>

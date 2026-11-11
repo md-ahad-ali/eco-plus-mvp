@@ -1,0 +1,7 @@
+
+username,building_name,room_name,timestamp,energy_consumed_kwh,indoor_temp
+demo_manager,Campus Building A,Lecture Hall 101,2026-10-01 08:00:00,1.25,21.5
+demo_manager,Campus Building A,Lecture Hall 101,2026-10-01 09:00:00,1.40,21.8
+demo_manager,Campus Building A,Computer Lab 102,2026-10-01 08:00:00,0.90,20.9
+demo_manager,Campus Building B,Library Floor 1,2026-10-01 08:00:00,2.10,22.0
+demo_manager,Campus Building B,Server Room,2026-10-01 08:00:00,5.30,18.5
