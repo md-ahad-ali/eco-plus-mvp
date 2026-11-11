@@ -2,8 +2,9 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AsyncState from "./AsyncState";
 import { useApi } from "../hooks/useApi";
-import { getBuildingTotals } from "../api/analytics";
+import { getBuildingTotals, getBuildingTotalsByUser } from "../api/analytics";
 import { getEnergyLogs } from "../api/energyLogs";
+import { getCurrentUser } from "../lib/auth";
 
 const PAGE_SIZE = 25;
 const field =
@@ -16,12 +17,17 @@ interface Props {
 }
 
 const EnergyLogsTable = ({ refreshKey = 0 }: Props) => {
+  const user = getCurrentUser();
   const [buildingId, setBuildingId] = useState<number | undefined>();
   const [start, setStart] = useState("");
   const [end, setEnd] = useState("");
   const [page, setPage] = useState(0);
 
-  const buildings = useApi((s) => getBuildingTotals({}, s), [refreshKey]);
+    const buildings = useApi(
+       (s) =>
+          user ? getBuildingTotalsByUser(user.id, {}, s) : Promise.resolve([]),
+       [user?.id],
+    );
   const logs = useApi(
     (s) =>
       getEnergyLogs(
@@ -35,6 +41,8 @@ const EnergyLogsTable = ({ refreshKey = 0 }: Props) => {
         s,
       ),
     [buildingId, start, end, page, refreshKey],
+
+  
   );
 
   const total = logs.data?.total ?? 0;

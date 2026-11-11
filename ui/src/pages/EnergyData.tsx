@@ -12,6 +12,7 @@ import {
   type CsvImportResult,
 } from "../api/uploads";
 
+
 const REQUIRED_COLUMNS = [
   "username",
   "building_name",
@@ -53,6 +54,7 @@ const EnergyData = () => {
   const [result, setResult] = useState<CsvImportResult | null>(null);
 
   const uploads = useApi((s) => getUploads(s), []);
+
 
   const pickFile = (f: File | undefined) => {
     setResult(null);

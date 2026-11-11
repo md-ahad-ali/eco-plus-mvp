@@ -20,20 +20,28 @@ def list_energy_logs(
     end: datetime | None = Query(default=None, description="Inclusive"),
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=25, ge=1, le=200),
-    _: User = Depends(get_current_user),  # must be logged in, but no role filtering
+    _: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
-    """Energy readings joined with their room and building, newest first.
+    """Energy readings joined with their room and building, newest first."""
 
-    Every authenticated user (admin, building manager, occupant) sees all records.
-    """
-    conditions = []
-    if building_id is not None:
-        conditions.append(Building.id == building_id)
+    # Return no data if building_id is not provided
+    if building_id is None:
+        return {
+            "items": [],
+            "total": 0,
+            "skip": skip,
+            "limit": limit,
+        }
+
+    conditions = [Building.id == building_id]
+
     if room_id is not None:
         conditions.append(Room.id == room_id)
+
     if start is not None:
         conditions.append(EnergyLog.timestamp >= start)
+
     if end is not None:
         conditions.append(EnergyLog.timestamp <= end)
 
