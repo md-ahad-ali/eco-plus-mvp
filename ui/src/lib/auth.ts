@@ -27,9 +27,14 @@ export function logout(): void {
   localStorage.removeItem(USER_KEY);
 }
 
-/** Only admins can add, edit and delete buildings and rooms. */
+/** Only admins can add, edit and delete buildings. */
 export function isAdmin(user: User | null): boolean {
   return user?.role === "admin";
+}
+
+/** Only building managers can add, edit and delete rooms (in the buildings they manage). */
+export function isBuildingManager(user: User | null): boolean {
+  return user?.role === "building_manager";
 }
 
 /** admin and building_manager can upload and manage energy data (managers: their own buildings). */

@@ -3,14 +3,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Building, Room, User, UserRole
+from models import Room, User, UserRole
 from routers.auth import get_current_user, require_roles
 from routers.buildings import _get_building_or_404
 from schemas import RoomCreate, RoomResponse, RoomUpdate
 
 router = APIRouter(prefix="/api", tags=["rooms"])
 
-admin_only = require_roles(UserRole.ADMIN)
+manager_only = require_roles(UserRole.BUILDING_MANAGER)
 
 
 def _get_room_or_404(db: Session, room_id: int, user: User) -> Room:
@@ -20,11 +20,6 @@ def _get_room_or_404(db: Session, room_id: int, user: User) -> Room:
     # Raises 404 if the user can't see the room's building.
     _get_building_or_404(db, room.building_id, user)
     return room
-
-
-def _ensure_building_exists(db: Session, building_id: int) -> None:
-    if db.get(Building, building_id) is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Building not found")
 
 
 @router.get("/buildings/{building_id}/rooms", response_model=list[RoomResponse])
@@ -57,10 +52,11 @@ def get_room(
 @router.post("/rooms", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
 def create_room(
     payload: RoomCreate,
-    _: User = Depends(admin_only),
+    current_user: User = Depends(manager_only),
     db: Session = Depends(get_db),
 ) -> Room:
-    _ensure_building_exists(db, payload.building_id)
+    """Create a room in a building the current manager manages (building manager only)."""
+    _get_building_or_404(db, payload.building_id, current_user)
     room = Room(
         building_id=payload.building_id,
         room_name=payload.room_name.strip(),
@@ -75,18 +71,17 @@ def create_room(
 def update_room(
     room_id: int,
     payload: RoomUpdate,
-    _: User = Depends(admin_only),
+    current_user: User = Depends(manager_only),
     db: Session = Depends(get_db),
 ) -> Room:
-    room = db.get(Room, room_id)
-    if room is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found")
+    """Update a room in a building the current manager manages (building manager only)."""
+    room = _get_room_or_404(db, room_id, current_user)
 
     data = payload.model_dump(exclude_unset=True)
     if data.get("building_id") is None:
         data.pop("building_id", None)
     elif data["building_id"] != room.building_id:
-        _ensure_building_exists(db, data["building_id"])
+        _get_building_or_404(db, data["building_id"], current_user)
     if data.get("room_name") is None:
         data.pop("room_name", None)
     else:
@@ -102,13 +97,11 @@ def update_room(
 @router.delete("/rooms/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_room(
     room_id: int,
-    _: User = Depends(admin_only),
+    current_user: User = Depends(manager_only),
     db: Session = Depends(get_db),
 ) -> Response:
-    """Delete a room (admin only). Its energy logs are removed by DB cascade."""
-    room = db.get(Room, room_id)
-    if room is None:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Room not found")
+    """Delete a room (building manager only). Its energy logs are removed by DB cascade."""
+    room = _get_room_or_404(db, room_id, current_user)
     db.delete(room)
     db.commit()
     return Response(status_code=status.HTTP_204_NO_CONTENT)

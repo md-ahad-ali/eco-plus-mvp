@@ -13,7 +13,7 @@ import { getBuilding } from "../api/buildings";
 import { listRooms, createRoom, updateRoom, deleteRoom } from "../api/rooms";
 import type { Room, RoomInput } from "../api/rooms";
 import { ApiError } from "../lib/api";
-import { getCurrentUser, isAdmin } from "../lib/auth";
+import { getCurrentUser, isBuildingManager } from "../lib/auth";
 
 interface RoomFormProps {
   buildingId: number;
@@ -81,7 +81,7 @@ const BuildingDetails = () => {
   const [search, setSearch] = useState("");
   const [modal, setModal] = useState<ModalState>(null);
   const user = getCurrentUser();
-  const showActions = isAdmin(user);
+  const showActions = isBuildingManager(user);
 
   const building = useApi((signal) => getBuilding(buildingId, signal), [buildingId]);
   const rooms = useApi(
@@ -144,7 +144,11 @@ const BuildingDetails = () => {
 
       <PageHeader
         title="Building Details"
-        description="Manage rooms and information for this building."
+        description={
+          showActions
+            ? "Manage rooms and information for this building."
+            : "Rooms and information for this building."
+        }
       />
 
       <AsyncState loading={building.loading} error={building.error} onRetry={building.refetch}>
