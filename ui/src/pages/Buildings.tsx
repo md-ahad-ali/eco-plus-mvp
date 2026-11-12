@@ -154,7 +154,7 @@ const Buildings = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <PageHeader
           title="Buildings & Rooms"
-          description={showActions ? "Manage buildings and their rooms." : "Buildings you manage and their rooms."}
+          description={showActions ? "Manage buildings and assign their managers." : "Buildings you manage and their rooms."}
         />
 
         {showActions ? (
