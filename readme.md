@@ -26,14 +26,14 @@ It uses AI to predict energy demand, detect abnormal consumption, and recommend 
 | Thi Ha Vu | MDT 7226574 | User & Building Management |
 | S M Saifur Rahman | MDT 7226434 | Energy Data Management |
 | Md. Ahad Ali | MDT 7226162 | Energy Analytics & Sustainability |
-| MD Sakib Khan | MDT 7225912 | Recommendations & Reporting |
+| MD Sakib Khan | MDT 7225912 | Recommendations|
 
 ### Subsystem Responsibilities
 
 - **Subsystem 1 – User & Building Management:** User registration, authentication, roles, building management, and room management.
 - **Subsystem 2 – Energy Data Management:** CSV uploads, data validation, energy log processing, and database storage.
 - **Subsystem 3 – Energy Analytics & Sustainability:** Energy dashboards, cost and carbon calculations, sustainability scores, forecasting, and anomaly detection.
-- **Subsystem 4 – Recommendations & Reporting:** AI-powered recommendations, estimated savings, report generation, and PDF/CSV exports.
+- **Subsystem 4 – Recommendations:** AI-powered recommendations, estimated savings.
 
 ## 3. System Architecture
 

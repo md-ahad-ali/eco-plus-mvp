@@ -16,7 +16,6 @@ const navigation = [
   { name: "Energy Data", path: "/energy-data", icon: Zap },
   { name: "Analytics", path: "/analytics", icon: ChartNoAxesCombined },
   { name: "AI Recommendations", path: "/recommendations", icon: Lightbulb },
-  { name: "Reports", path: "/reports", icon: FileText },
   { name: "My Profile", path: "/profile", icon: User },
 ];
 
