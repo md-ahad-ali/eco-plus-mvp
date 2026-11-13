@@ -156,7 +156,7 @@ Use the following demo accounts to explore the application:
 
 The video demonstrates the EcoPulse MVP, including its system architecture, main features, subsystem implementations, and application workflow.
 
-**Video Link:** [Add the 5-minute project demonstration video link here]
+**Video Link:** https://drive.google.com/drive/folders/16BSByK4xbmVxkF1vwJHzVc-lNwqutSOG?usp=sharing
 
 ## 8. Academic Information
 

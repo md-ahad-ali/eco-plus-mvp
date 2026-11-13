@@ -68,64 +68,47 @@ SHOW TABLES;
 SELECT * FROM users;
 ```
 
-### Configure the Backend (`config.py`)
+## 6. Configure the Backend (`.env`)
 
-Open `config.py` in the `backend` folder and change the values below for your own setup.
+The backend reads all settings from a `.env` file in the `backend` folder. The repository does not contain this file, so you must create it yourself. The file `.env_example` in the `backend` folder lists every setting with placeholder values. Use it as your reference.
 
-**1. Database connection (required)**
+### Create the `.env` file
 
-```python
-DATABASE_URL = "mysql+pymysql://root:your_mysql_password@127.0.0.1:3306/ecopulse"
-```
+1. Make a copy of `.env_example` in the `backend` folder.
+2. Rename the copy to `.env`.
+3. Open `.env` and replace the placeholder values with your own.
 
-Replace the username, password, host, port, and database name with your MySQL settings. Use the port that your MySQL Server listens on (for example `3306` for a default install).
+### Required settings
 
-**2. OpenAI API key (required for AI features)**
+| Variable | Purpose |
+|---|---|
+| `DATABASE_URL` | MySQL connection string, for example `mysql+pymysql://root:your_mysql_password@127.0.0.1:3306/ecopulse`. Use the port that your MySQL Server listens on (`3306` for a default install). |
+| `OPENAI_API_KEY` | Your OpenAI API key. The AI recommendations do not work without it. |
+| `SECRET_KEY` | A long random string for the JWT tokens. Use a password generator or any secure random string tool to create it. |
 
-```python
-OPENAI_API_KEY = "your_openai_api_key"
-```
+### Email (SMTP) settings
 
-Paste your own OpenAI API key. The AI recommendations do not work without it.
+These settings control the password reset emails: `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_FROM`, and `SMTP_USE_TLS`.
 
-**3. Email (SMTP) settings (optional)**
+For Gmail, set `SMTP_HOST` to `smtp.gmail.com`, use your Gmail address as `SMTP_USERNAME`, and use a Gmail app password as `SMTP_PASSWORD`. If you leave `SMTP_HOST` empty, the backend prints the password reset links to the console and sends no email.
 
-These settings live in the `Settings` class and control the password reset emails:
+### Other settings
 
-```python
-smtp_host: str = ""            # e.g. "smtp.gmail.com"
-smtp_port: int = 587
-smtp_username: str = ""        # your Gmail address
-smtp_password: str = ""        # your Gmail app password
-smtp_from: str = "no-reply@ecopulse.local"
-smtp_use_tls: bool = True
-```
-
-If you leave `smtp_host` empty, the backend prints the password reset links to the console and sends no email. You can also set these values in a `.env` file inside the `backend` folder (for example `SMTP_HOST=smtp.gmail.com`).
-
-**4. Security settings (recommended)**
-
-```python
-SECRET_KEY = "change-this-to-a-long-random-string"
-```
-
-Change `SECRET_KEY` (and `secret_key` in the `Settings` class) before any real deployment. The JWT tokens use this key.
-
-**5. Other settings (optional)**
-
-| Setting | Default | Purpose |
+| Variable | Default in `.env_example` | Purpose |
 |---|---|---|
-| `host` / `port` | `127.0.0.1` / `8000` | Address of the API server |
-| `frontend_url` | `http://localhost:5173` | Frontend address for password reset links |
-| `TARIFF` | `0.30` | Electricity price per kWh |
-| `CO2_FACTOR` | `0.40` | Carbon emissions per kWh |
-| `BENCHMARK` | `0.06` | Benchmark value for the sustainability score |
+| `HOST` / `PORT` | `127.0.0.1` / `8000` | Address of the API server |
+| `FRONTEND_URL` | `http://localhost:5173` | Frontend address for password reset links |
+| `TARIFF_EUR_PER_KWH` | `0.30` | Electricity price per kWh |
+| `CO2_KG_PER_KWH` | `0.40` | Carbon emissions per kWh |
+| `BENCHMARK_KWH_PER_SQM_DAY` | `0.06` | Benchmark value for the sustainability score |
 | `MODEL` | `gpt-6-luna` | OpenAI model name for AI features |
 | `MAX_TOKENS`, `DAILY_CAP`, `TIMEOUT_S`, `MAX_RETRIES`, `MAX_TEXT_LEN` | `1500`, `20`, `30`, `3`, `2000` | Limits for the AI requests |
 
-> **Warning:** Never commit real API keys, passwords, or secrets to GitHub. Keep them in a local file that Git ignores, such as `.env`.
+> **Note:** The code defines no default values. Every variable from `.env_example` must exist in your `.env` file, or the application stops at startup with an error.
 
-## 6. Run the Backend
+> **Warning:** Never commit your `.env` file to GitHub. It contains secrets, so keep it in `.gitignore`. Commit only `.env_example` with placeholder values.
+
+## 7. Run the Backend
 
 Start the application:
 
@@ -141,7 +124,7 @@ http://127.0.0.1:8000
 
 Press `Ctrl + C` to stop the server.
 
-## 7. API Documentation
+## 8. API Documentation
 
 FastAPI provides interactive API documentation.
 
@@ -161,7 +144,7 @@ FastAPI provides interactive API documentation.
 
 Swagger UI lists the additional authentication, energy management, analytics, and sustainability endpoints.
 
-## 8. Dependency Management
+## 9. Dependency Management
 
 Update `requirements.txt` after you install new dependencies:
 
@@ -175,22 +158,22 @@ Install dependencies on another machine:
 python -m pip install -r requirements.txt
 ```
 
-## 9. Troubleshooting
+## 10. Common Problems
 
 ### ModuleNotFoundError
 
-Activate the virtual environment and reinstall the dependencies:
+Activate the virtual environment and reinstall the dependencies from `requirements.txt`.
 
-```powershell
-python -m pip install -r requirements.txt
-```
+### Settings Validation Error at Startup
+
+A variable is missing in your `.env` file. Compare it with `.env_example` and add the missing variable.
 
 ### MySQL Connection Error
 
 - Make sure MySQL Server runs.
 - Verify your MySQL username and password.
 - Check the database name and port.
-- Verify the `DATABASE_URL` in `config.py`.
+- Verify the `DATABASE_URL` in your `.env` file.
 - Make sure PyMySQL is installed.
 
 ### Database Does Not Exist
@@ -204,9 +187,9 @@ Execute the SQL scripts in the correct order:
 
 ### Port 8000 Already in Use
 
-Change the application port (`port: int = 8000`) in `config.py`.
+Change the `PORT` value in your `.env` file.
 
-## 10. Technology Stack
+## 11. Technology Stack
 
 | Component | Technology |
 |---|---|
@@ -220,7 +203,7 @@ Change the application port (`port: int = 8000`) in `config.py`.
 | Authentication | JWT |
 | Email Service | Gmail SMTP |
 | AI Integration | OpenAI API |
-| Data Processing | Pandas |
+| Data Analysis | Pandas |
 | Version Control | Git and GitHub |
 
 ---
