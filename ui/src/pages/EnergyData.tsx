@@ -4,7 +4,10 @@ import EnergyLogsTable from "../components/EnergyLogsTable";
 import PageHeader from "../components/PageHeader";
 import AsyncState from "../components/AsyncState";
 import { useApi } from "../hooks/useApi";
-import { getCurrentUser, canManage } from "../lib/auth";
+//import { getCurrentUser, canManage } from "../lib/auth";
+import { getCurrentUser, isBuildingManager } from "../lib/auth";
+
+
 import {
   getUploads,
   uploadCsv,
@@ -43,7 +46,8 @@ function validateFile(file: File): string | null {
 
 const EnergyData = () => {
   const user = getCurrentUser();
-  const allowed = canManage(user);
+  //const allowed = canManage(user);
+  const allowed = isBuildingManager(user);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -217,7 +221,7 @@ const EnergyData = () => {
           </div>
         )}
 
-        {allowed && <div>
+        {/* {allowed && <div>
           <h3 className="mb-3 text-lg font-semibold text-gray-800">Upload History</h3>
           <AsyncState loading={uploads.loading} error={uploads.error} onRetry={uploads.refetch}>
             {uploads.data?.length ? (
@@ -254,7 +258,47 @@ const EnergyData = () => {
             )}
           </AsyncState>
         </div>
-        }
+        } */}
+
+
+<div>
+  <h3 className="mb-3 text-lg font-semibold text-gray-800">Upload History</h3>
+  <AsyncState loading={uploads.loading} error={uploads.error} onRetry={uploads.refetch}>
+     {uploads.data?.length ? (
+              <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-gray-50 text-gray-600">
+                    <tr>
+                      <th className="px-4 py-3 font-medium">ID</th>
+                      <th className="px-4 py-3 font-medium">File</th>
+                      <th className="px-4 py-3 font-medium">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {uploads.data.map((u) => (
+                      <tr key={u.id}>
+                        <td className="px-4 py-3 text-gray-500">{u.id}</td>
+                        <td className="px-4 py-3">{u.filename}</td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`rounded-full px-2.5 py-1 text-xs font-medium capitalize ${
+                              statusStyle[u.status] ?? "bg-gray-100 text-gray-600"
+                            }`}
+                          >
+                            {u.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              <p className="text-sm text-gray-500">No uploads yet.</p>
+            )}
+  </AsyncState>
+</div>
+
         <EnergyLogsTable refreshKey={refreshKey} />
       </div>
     </div>

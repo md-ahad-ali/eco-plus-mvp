@@ -2,9 +2,10 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import AsyncState from "./AsyncState";
 import { useApi } from "../hooks/useApi";
+import { getCurrentUser, isAdmin } from "../lib/auth";
 import { getBuildingTotals, getBuildingTotalsByUser } from "../api/analytics";
 import { getEnergyLogs } from "../api/energyLogs";
-import { getCurrentUser } from "../lib/auth";
+//import { getCurrentUser } from "../lib/auth";
 
 const PAGE_SIZE = 25;
 const field =
@@ -24,10 +25,14 @@ const EnergyLogsTable = ({ refreshKey = 0 }: Props) => {
   const [page, setPage] = useState(0);
 
     const buildings = useApi(
-       (s) =>
-          user ? getBuildingTotalsByUser(user.id, {}, s) : Promise.resolve([]),
-       [user?.id],
-    );
+    (s) => {
+      if (!user) return Promise.resolve([]);
+      return isAdmin(user)
+        ? getBuildingTotals({}, s)
+        : getBuildingTotalsByUser(user.id, {}, s);
+    },
+    [user?.id, user?.role],
+  );
   const logs = useApi(
     (s) =>
       getEnergyLogs(

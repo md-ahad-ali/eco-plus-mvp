@@ -5,7 +5,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from database import get_db
-from models import Building, EnergyLog, Room, User
+from models import Building, EnergyLog, Room, User, UserRole
 from routers.auth import get_current_user
 from routers.buildings import _get_building_or_404
 from schemas import EnergyLogPage, EnergyLogRow
@@ -24,28 +24,24 @@ def list_energy_logs(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ) -> dict:
-    """Energy readings joined with their room and building, newest first."""
+    """Energy readings joined with their room and building, newest first.
 
-    # Return no data if building_id is not provided
-    if building_id is None:
-        return {
-            "items": [],
-            "total": 0,
-            "skip": skip,
-            "limit": limit,
-        }
+    Admin: all buildings. Building manager: only buildings they manage.
+    """
+    conditions = []
 
-    # 404 if the building doesn't exist or isn't managed by the current user.
-    _get_building_or_404(db, building_id, current_user)
-
-    conditions = [Building.id == building_id]
+    if building_id is not None:
+        # 404 if the building doesn't exist or the user can't see it.
+        _get_building_or_404(db, building_id, current_user)
+        conditions.append(Building.id == building_id)
+    elif current_user.role != UserRole.ADMIN:
+        # No building chosen: managers get all of their own buildings.
+        conditions.append(Building.user_id == current_user.id)
 
     if room_id is not None:
         conditions.append(Room.id == room_id)
-
     if start is not None:
         conditions.append(EnergyLog.timestamp >= start)
-
     if end is not None:
         conditions.append(EnergyLog.timestamp <= end)
 
