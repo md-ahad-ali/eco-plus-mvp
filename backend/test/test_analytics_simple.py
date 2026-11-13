@@ -1,3 +1,5 @@
+import fixtures_users  # noqa: F401  (must come first: adds backend/ to sys.path and sets test env vars)
+
 import uuid
 from datetime import datetime
 
